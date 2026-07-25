@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>CREATION</title>
+
+  <meta
+    name="description"
+    content="Search, measure, and compose biological possibility."
+  >
+
+  <style>
+    :root {
+      --paper: #f4f3ed;
+      --ink: #0b0c0c;
+      --muted: #686963;
+      --line: rgba(11, 12, 12, 0.18);
+      --blue: #1747ff;
+      --orange: #ff4e21;
+      --acid: #d4ff38;
+      --white: #fffef8;
+      --pad: clamp(20px, 4vw, 64px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--paper);
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family:
+        "Helvetica Neue",
+        Helvetica,
+        Arial,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+    }
+
+    header {
+      position: fixed;
+      z-index: 20;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 70px;
+      padding: 0 var(--pad);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: rgba(244, 243, 237, 0.94);
+      backdrop-filter: blur(16px);
+    }
+
+    .wordmark {
+      font-size: 17px;
+      font-weight: 950;
+      letter-spacing: -0.06em;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .light {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+    }
+
+    main {
+      padding-top: 70px;
+    }
+
+    .hero {
+      min-height: calc(100svh - 70px);
+      padding: 56px var(--pad) 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+      gap: 48px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-copy {
+      align-self: center;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    h1,
+    h2 {
+      margin: 24px 0;
+      font-family:
+        "Arial Narrow",
+        "Helvetica Neue",
+        Helvetica,
+        Arial,
+        sans-serif;
+      font-weight: 950;
+      letter-spacing: -0.075em;
+      line-height: 0.86;
+    }
+
+    h1 {
+      max-width: 980px;
+      font-size: clamp(72px, 10vw, 164px);
+    }
+
+    h1 span {
+      color: var(--blue);
+    }
+
+    .intro {
+      max-width: 720px;
+      margin: 34px 0;
+      font-size: clamp(18px, 1.7vw, 26px);
+      line-height: 1.38;
+      letter-spacing: -0.025em;
+    }
+
+    .hero-image {
+      min-height: 650px;
+      margin: 0;
+      position: relative;
+      overflow: hidden;
+      background: #d8d8d2;
+    }
+
+    .hero-image img {
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.88) contrast(1.05);
+    }
+
+    .caption {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 14px;
+      color: white;
+      background: rgba(0, 0, 0, 0.64);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .search-section {
+      padding: clamp(82px, 10vw, 160px) var(--pad);
+    }
+
+    .section-head {
+      padding-top: 16px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 40px;
+      border-top: 1px solid var(--ink);
+    }
+
+    h2 {
+      max-width: 1000px;
+      font-size: clamp(60px, 8vw, 130px);
+    }
+
+    .section-head p {
+      align-self: end;
+      margin-bottom: 30px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .instrument {
+      margin-top: 70px;
+      padding: clamp(26px, 5vw, 72px);
+      color: var(--white);
+      background: var(--blue);
+    }
+
+    .field-meta {
+      padding-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .search-row {
+      margin-top: 54px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      border-bottom: 2px solid white;
+    }
+
+    input {
+      width: 100%;
+      padding: 18px 0 24px;
+      color: white;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      font-size: clamp(30px, 4vw, 66px);
+      font-weight: 850;
+      letter-spacing: -0.05em;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.52);
+    }
+
+    button {
+      padding: 0 4px 0 30px;
+      color: white;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      font-size: 34px;
+    }
+
+    .samples {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sample {
+      padding: 10px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .results {
+      margin-top: 56px;
+    }
+
+    .result {
+      padding: 26px 0;
+      display: grid;
+      grid-template-columns: 52px 110px 1fr auto;
+      gap: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .rank,
+    .type,
+    .score {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+
+    .type {
+      color: var(--acid);
+      text-transform: uppercase;
+    }
+
+    .result h3 {
+      margin: 0;
+      font-size: clamp(22px, 2.5vw, 38px);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .result p {
+      max-width: 900px;
+      margin: 12px 0 0;
+      color: rgba(255, 255, 255, 0.68);
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 48px 0 0;
+      color: rgba(255, 255, 255, 0.68);
+    }
+
+    .imagery {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      color: white;
+      background: var(--ink);
+    }
+
+    .imagery figure {
+      min-height: 720px;
+      margin: 0;
+    }
+
+    .imagery img {
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .imagery-copy {
+      padding: clamp(48px, 7vw, 110px);
+      align-self: center;
+    }
+
+    .imagery h2 {
+      font-size: clamp(56px, 7vw, 110px);
+    }
+
+    .imagery-copy p:last-child {
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    .thesis {
+      padding: clamp(90px, 12vw, 190px) var(--pad);
+      color: var(--ink);
+      background: var(--acid);
+    }
+
+    .thesis h2 {
+      max-width: 1300px;
+      font-size: clamp(72px, 11vw, 180px);
+    }
+
+    .thesis p {
+      max-width: 1050px;
+      font-size: clamp(25px, 3.3vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    footer {
+      padding: 36px var(--pad);
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      color: rgba(255, 255, 255, 0.72);
+      background: var(--ink);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .section-head,
+      .imagery {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-image {
+        min-height: 70svh;
+      }
+
+      .section-head p {
+        margin-top: 0;
+      }
+
+      .result {
+        grid-template-columns: 40px 1fr auto;
+      }
+
+      .result .type {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        padding-top: 42px;
+      }
+
+      h1 {
+        font-size: clamp(60px, 19vw, 88px);
+      }
+
+      .hero-image {
+        min-height: 62svh;
+      }
+
+      .field-meta {
+        flex-direction: column;
+      }
+
+      .search-row {
+        grid-template-columns: 1fr 42px;
+      }
+
+      .result {
+        grid-template-columns: 32px 1fr;
+      }
+
+      .score {
+        grid-column: 2;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a class="wordmark" href="/">CREATION</a>
+
+    <div class="status">
+      <span class="light"></span>
+      <span id="status">FIELD CONNECTING</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          BIOLOGICAL CREATION SYSTEM · ARBITER 72D
+        </p>
+
+        <h1>
+          Build what biology
+          <span>has never seen.</span>
+        </h1>
+
+        <p class="intro">
+          Search, measure, and compose biological possibility
+          across genomes, genes, proteins, pathways, cells,
+          organisms, and experiments.
+        </p>
+      </div>
+
+      <figure class="hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1800&q=88"
+          alt="Real laboratory glassware and biological research environment"
+        >
+
+        <figcaption class="caption">
+          REAL BIOLOGICAL RESEARCH · PHOTOGRAPHY VIA UNSPLASH
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="search-section">
+      <div class="section-head">
+        <h2>
+          Ask biology by meaning.
+        </h2>
+
+        <p>
+          CREATION does not generate the evidence. It measures
+          which biological objects actually cohere with the
+          intent of the question.
+        </p>
+      </div>
+
+      <div class="instrument">
+        <div class="field-meta">
+          <span>ACTIVE CREATION FIELD</span>
+          <span id="count">OBJECTS —</span>
+          <span>DETERMINISTIC · 72 DIMENSIONS</span>
+        </div>
+
+        <form class="search-row" id="search-form">
+          <input
+            id="query"
+            autocomplete="off"
+            placeholder="Describe what you are trying to create…"
+          >
+
+          <button aria-label="Search" type="submit">→</button>
+        </form>
+
+        <div class="samples">
+          <button
+            class="sample"
+            type="button"
+            data-query="Human genes and proteins involved in homologous recombination and double-strand DNA break repair"
+          >
+            DNA REPAIR
+          </button>
+
+          <button
+            class="sample"
+            type="button"
+            data-query="Create a tree that produces more oxygen without collapsing its own growth economy"
+          >
+            OXYGEN-PRODUCING TREE
+          </button>
+
+          <button
+            class="sample"
+            type="button"
+            data-query="Biological systems for carbon capture with low energy cost and high environmental resilience"
+          >
+            CARBON CAPTURE
+          </button>
+        </div>
+
+        <div class="results" id="results">
+          <p class="empty">
+            Enter an intent to measure the field.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="imagery">
+      <figure>
+        <img
+          src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1800&q=88"
+          alt="Real scientific laboratory microscopy and biological research"
+          loading="lazy"
+        >
+      </figure>
+
+      <div class="imagery-copy">
+        <p class="eyebrow">THE COHERENCE LAYER</p>
+
+        <h2>
+          The evidence must match the intent.
+        </h2>
+
+        <p>
+          Before any model reasons over biological documents,
+          CREATION measures whether the underlying genes,
+          proteins, organisms, pathways, and experiments belong
+          to the same problem.
+        </p>
+      </div>
+    </section>
+
+    <section class="thesis">
+      <p class="eyebrow">NOT ANOTHER MODEL</p>
+
+      <h2>
+        Language defines the aim. The field reveals the structure.
+      </h2>
+
+      <p>
+        Creation begins when biological reality becomes
+        searchable as one coherent field—not when a model
+        produces another plausible answer.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>CREATION · ACTUAL GENERAL INTELLIGENCE</span>
+    <span>ARBITER · 26MB · 72D</span>
+    <span>SAN DIEGO · 2026</span>
+  </footer>
+
+  <script>
+    const statusNode = document.querySelector("#status");
+    const countNode = document.querySelector("#count");
+    const form = document.querySelector("#search-form");
+    const queryNode = document.querySelector("#query");
+    const resultsNode = document.querySelector("#results");
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadManifest() {
+      try {
+        const response = await fetch("/field/v1/manifest", {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const manifest = await response.json();
+        const count = Number(manifest.count || 0);
+
+        statusNode.textContent = "FIELD LIVE";
+        countNode.textContent =
+          `${count.toLocaleString()} OBJECTS`;
+      } catch {
+        statusNode.textContent = "FIELD OFFLINE";
+        countNode.textContent = "OBJECTS —";
+      }
+    }
+
+    function normalizeResults(payload) {
+      if (Array.isArray(payload)) return payload;
+
+      return (
+        payload.results ||
+        payload.matches ||
+        payload.items ||
+        []
+      );
+    }
+
+    function renderResults(rows) {
+      if (!rows.length) {
+        resultsNode.innerHTML =
+          '<p class="empty">No coherent objects returned.</p>';
+        return;
+      }
+
+      resultsNode.innerHTML = rows.map((row, index) => {
+        const title =
+          row.title ||
+          row.name ||
+          row.label ||
+          row.source_id ||
+          "Untitled biological object";
+
+        const type =
+          row.type ||
+          row.object_type ||
+          row.category ||
+          row.source ||
+          "object";
+
+        const description =
+          row.description ||
+          row.summary ||
+          row.text ||
+          row.snippet ||
+          "";
+
+        const rawScore =
+          row.resonance ??
+          row.score ??
+          row.similarity ??
+          0;
+
+        const score = Number(rawScore);
+
+        return `
+          <article class="result">
+            <span class="rank">
+              ${String(index + 1).padStart(2, "0")}
+            </span>
+
+            <span class="type">
+              ${escapeHtml(type)}
+            </span>
+
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+              ${
+                description
+                  ? `<p>${escapeHtml(description)}</p>`
+                  : ""
+              }
+            </div>
+
+            <span class="score">
+              ${Number.isFinite(score) ? score.toFixed(3) : "—"}
+            </span>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function search(text) {
+      const query = text.trim();
+
+      if (!query) return;
+
+      queryNode.value = query;
+
+      resultsNode.innerHTML =
+        '<p class="empty">Measuring the field…</p>';
+
+      try {
+        const response = await fetch("/field/v1/search", {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify({
+            text: query,
+            q: query,
+            k: 30
+          })
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            payload.detail ||
+            payload.error ||
+            `HTTP ${response.status}`
+          );
+        }
+
+        renderResults(normalizeResults(payload));
+        loadManifest();
+      } catch (error) {
+        resultsNode.innerHTML = `
+          <p class="empty">
+            CREATION field unavailable:
+            ${escapeHtml(error.message)}
+          </p>
+        `;
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      search(queryNode.value);
+    });
+
+    document.querySelectorAll("[data-query]").forEach(button => {
+      button.addEventListener("click", () => {
+        search(button.dataset.query || "");
+      });
+    });
+
+    loadManifest();
+    setInterval(loadManifest, 15000);
+  </script>
+</body>
+</html>

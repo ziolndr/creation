@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: creation
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CREATION_BACKEND_URL
+        sync: false
+      - key: CREATION_BACKEND_TOKEN
+        sync: false
+      - key: CREATION_PROXY_TIMEOUT_MS
+        value: "120000"

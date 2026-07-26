@@ -1695,7 +1695,7 @@
         <div class="intervention-head-copy">
           <span class="program-eyebrow">CREATION / Intervention design</span>
           <h2 class="intervention-title" id="interventionTitle">Design the molecule field.</h2>
-          <p class="intervention-deck">The complete resonance-selected cell program becomes the intervention specification. CREATION first retrieves measured chemistry, then uses the configured local generator and evaluation workers when they are available.</p>
+          <p class="intervention-deck">The complete resonance-selected cell program becomes the intervention specification. CREATION retrieves measured chemistry, generates analogs, predicts ADMET and target activity, evaluates synthesis feasibility, then ranks the physical candidate field in ARBITER.</p>
         </div>
         <button class="intervention-close" id="closeIntervention" type="button" aria-label="Close intervention design">×</button>
       </header>
@@ -1704,10 +1704,10 @@
         <div class="intervention-control-block">
           <span class="program-label">Design lane</span>
           <div class="intervention-mode-row" role="group" aria-label="Intervention design lane">
-            <button class="intervention-mode" type="button" data-intervention-mode="existing" aria-pressed="true">Existing chemistry</button>
+            <button class="intervention-mode" type="button" data-intervention-mode="existing" aria-pressed="false">Existing chemistry</button>
             <button class="intervention-mode" type="button" data-intervention-mode="combination" aria-pressed="false">Small combination</button>
             <button class="intervention-mode" type="button" data-intervention-mode="de_novo" aria-pressed="false">Generate candidates</button>
-            <button class="intervention-mode" type="button" data-intervention-mode="all" aria-pressed="false">All lanes</button>
+            <button class="intervention-mode" type="button" data-intervention-mode="all" aria-pressed="true">All lanes</button>
           </div>
         </div>
 
@@ -1734,7 +1734,7 @@
       <div class="candidate-field" id="candidateField">
         <div class="candidate-empty">
           <strong>The ranked biology becomes a chemical search space.</strong>
-          <span>Existing-compound retrieval runs through the live CREATION field server. Generated candidates, ADMET, docking, synthesis planning, and ARBITER ranking activate when their worker endpoints are configured.</span>
+          <span>The local CREATION chemistry worker executes every stage. Generated structures and computational predictions remain hypotheses until experimentally validated.</span>
         </div>
       </div>
 
@@ -1799,7 +1799,7 @@
       let currentQuery = "";
       let programMode = "crispri";
       const selectedTargets = new Map();
-      let interventionMode = "existing";
+      let interventionMode = "all";
       let interventionResult = null;
       const selectedCandidates = new Map();
       const RESULT_BATCH_SIZE = 50;
@@ -1807,7 +1807,8 @@
       let hasMoreResults = false;
       let loadingMoreResults = false;
       let loadMoreObserver = null;
-      let loadMoreCheckTimer = 0;
+      let automaticLoadArmed = true;
+      let loadMoreSentinelVisible = false;
       const excludedTargetKeys = new Set();
 
       const firstValue = (...values) => {
@@ -2520,6 +2521,11 @@
         push("QED", properties.qed_weighted ?? properties.qed);
         push("cLogP", properties.alogp ?? properties.logp);
         push("phase", candidate.max_phase);
+        push("ADMET", candidate.admet?.screening_score);
+        push("binding", candidate.binding?.score);
+        push("SA", candidate.synthesis?.sa_score);
+        push("ARBITER", candidate.arbiter?.resonance);
+        push("overall", candidate.overall_score);
         push("status", candidate.status);
 
         return metrics;
@@ -2843,58 +2849,6 @@
       };
 
 
-      const loadMoreIsNearViewport = () => {
-        if (
-          loadMoreNode.hidden ||
-          !hasMoreResults ||
-          !currentResults.length
-        ) {
-          return false;
-        }
-
-        const bounds =
-          loadMoreNode.getBoundingClientRect();
-
-        return (
-          bounds.top <=
-          window.innerHeight + 900
-        );
-      };
-
-      const scheduleLoadMoreCheck = (
-        delay = 90
-      ) => {
-        window.clearTimeout(
-          loadMoreCheckTimer
-        );
-
-        loadMoreCheckTimer =
-          window.setTimeout(() => {
-            if (
-              !loadingMoreResults &&
-              loadMoreIsNearViewport()
-            ) {
-              loadMoreResults();
-            }
-          }, delay);
-      };
-
-      const rearmLoadMoreObserver = () => {
-        if (!loadMoreObserver) return;
-
-        loadMoreObserver.unobserve(
-          loadMoreNode
-        );
-
-        window.requestAnimationFrame(() => {
-          loadMoreObserver.observe(
-            loadMoreNode
-          );
-
-          scheduleLoadMoreCheck(40);
-        });
-      };
-
       const updateLoadMore = () => {
         const loaded = currentResults.length;
         const nextStart = loaded + 1;
@@ -2923,10 +2877,6 @@
 
         loadMoreButton.textContent =
           `Load ${RESULT_BATCH_SIZE} more ↓`;
-
-        window.requestAnimationFrame(() => {
-          scheduleLoadMoreCheck(60);
-        });
       };
 
       const fetchRankedWindow = async (
@@ -3045,7 +2995,6 @@
         } finally {
           loadingMoreResults = false;
           updateLoadMore();
-          rearmLoadMoreObserver();
         }
       };
 
@@ -3064,6 +3013,8 @@
         setLoading(true);
         hasMoreResults = false;
         loadingMoreResults = false;
+        automaticLoadArmed = true;
+        loadMoreSentinelVisible = false;
         updateLoadMore();
         statusNode.textContent = "Measuring query against the live field";
         statusNode.classList.remove("error");
@@ -3103,6 +3054,8 @@
           excludedTargetKeys.clear();
           hasMoreResults = false;
           loadingMoreResults = false;
+          automaticLoadArmed = true;
+          loadMoreSentinelVisible = false;
           updateLoadMore();
           updateProgramBar();
           updateFilterCounts();
@@ -3280,17 +3233,38 @@
         loadMoreObserver =
           new IntersectionObserver(
             entries => {
-              if (
-                entries.some(
-                  entry => entry.isIntersecting
-                )
-              ) {
-                scheduleLoadMoreCheck(0);
+              for (const entry of entries) {
+                loadMoreSentinelVisible =
+                  entry.isIntersecting;
+
+                if (!entry.isIntersecting) {
+                  /*
+                   * The newly appended records pushed the
+                   * sentinel below the viewport. The next
+                   * user scroll can now trigger one more batch.
+                   */
+                  automaticLoadArmed = true;
+                  continue;
+                }
+
+                if (
+                  automaticLoadArmed &&
+                  !loadingMoreResults &&
+                  hasMoreResults
+                ) {
+                  /*
+                   * Lock before starting the request. Remaining
+                   * inside the observer margin cannot start a
+                   * second request.
+                   */
+                  automaticLoadArmed = false;
+                  loadMoreResults();
+                }
               }
             },
             {
               root: null,
-              rootMargin: "900px 0px",
+              rootMargin: "240px 0px",
               threshold: 0
             }
           );
@@ -3299,18 +3273,6 @@
           loadMoreNode
         );
       }
-
-      window.addEventListener(
-        "scroll",
-        () => scheduleLoadMoreCheck(70),
-        { passive: true }
-      );
-
-      window.addEventListener(
-        "resize",
-        () => scheduleLoadMoreCheck(70),
-        { passive: true }
-      );
 
       form.addEventListener("submit", event => {
         event.preventDefault();

@@ -300,6 +300,26 @@
       cursor: pointer;
     }
 
+    .filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 9px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
     .filter[aria-pressed="true"] {
       background: var(--ink);
       color: #fff;
@@ -647,12 +667,24 @@
         </div>
 
         <nav class="filters" aria-label="Result type filters">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">All</button>
-          <button class="filter" type="button" data-filter="assembly" aria-pressed="false">Assemblies</button>
-          <button class="filter" type="button" data-filter="gene" aria-pressed="false">Genes</button>
-          <button class="filter" type="button" data-filter="transcript" aria-pressed="false">Transcripts</button>
-          <button class="filter" type="button" data-filter="protein" aria-pressed="false">Proteins</button>
-          <button class="filter" type="button" data-filter="sequence" aria-pressed="false">Sequences</button>
+          <button class="filter" type="button" data-filter="all" data-label="All" aria-pressed="true">
+            <span>All</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="assembly" data-label="Assemblies" aria-pressed="false">
+            <span>Assemblies</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="gene" data-label="Genes" aria-pressed="false">
+            <span>Genes</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="transcript" data-label="Transcripts" aria-pressed="false">
+            <span>Transcripts</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="protein" data-label="Proteins" aria-pressed="false">
+            <span>Proteins</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="sequence" data-label="Sequences" aria-pressed="false">
+            <span>Sequences</span><span class="filter-count">0</span>
+          </button>
         </nav>
 
         <div class="status" id="status">Ready · results open directly to authoritative NCBI records</div>
@@ -750,17 +782,81 @@
 
       const recordType = raw => {
         const { merged } = flattenRecord(raw);
-        const value = firstValue(
-          objectValue(merged, ["type", "kind", "category", "record_type", "object_type"]),
+        const value = String(firstValue(
+          objectValue(merged, [
+            "type",
+            "kind",
+            "category",
+            "record_type",
+            "object_type",
+            "entity_type"
+          ]),
           ""
-        ).toLowerCase();
+        )).toLowerCase();
 
         if (value.includes("assembl")) return "assembly";
         if (value.includes("gene")) return "gene";
         if (value.includes("transcript") || value.includes("rna")) return "transcript";
         if (value.includes("protein") || value.includes("peptide")) return "protein";
         if (value.includes("sequence") || value.includes("nucleotide")) return "sequence";
-        return value || "record";
+
+        const accession = String(firstValue(
+          objectValue(merged, [
+            "assembly_accession",
+            "accession",
+            "accession_version",
+            "gene_accession",
+            "protein_accession",
+            "transcript_accession",
+            "sequence_accession",
+            "refseq_accession",
+            "identifier",
+            "id"
+          ]),
+          ""
+        )).trim();
+
+        if (
+          objectValue(merged, ["assembly_accession"]) ||
+          /^GC[AF]_\d+(?:\.\d+)?$/i.test(accession)
+        ) {
+          return "assembly";
+        }
+
+        if (
+          objectValue(merged, [
+            "gene_id",
+            "geneid",
+            "entrez_gene_id",
+            "entrez_id",
+            "gene_symbol"
+          ])
+        ) {
+          return "gene";
+        }
+
+        if (
+          objectValue(merged, ["protein_accession"]) ||
+          /^(NP|XP|YP|WP|AP|P)_/i.test(accession)
+        ) {
+          return "protein";
+        }
+
+        if (
+          objectValue(merged, ["transcript_accession"]) ||
+          /^(NM|NR|XM|XR)_/i.test(accession)
+        ) {
+          return "transcript";
+        }
+
+        if (
+          objectValue(merged, ["sequence_accession"]) ||
+          /^(NC|NG|NT|NW|NZ|CP|CM)_/i.test(accession)
+        ) {
+          return "sequence";
+        }
+
+        return "record";
       };
 
       const normalizedAccession = raw => {
@@ -968,7 +1064,43 @@
         }
       };
 
+      const updateFilterCounts = () => {
+        const counts = {
+          all: currentResults.length,
+          assembly: 0,
+          gene: 0,
+          transcript: 0,
+          protein: 0,
+          sequence: 0
+        };
+
+        for (const item of currentResults) {
+          const type = recordType(item);
+          if (Object.prototype.hasOwnProperty.call(counts, type)) {
+            counts[type] += 1;
+          }
+        }
+
+        for (const button of filters) {
+          const key = button.dataset.filter || "all";
+          const label = button.dataset.label || key;
+          const count = counts[key] ?? 0;
+          const countNode = button.querySelector(".filter-count");
+
+          if (countNode) {
+            countNode.textContent = count.toLocaleString();
+          }
+
+          button.setAttribute(
+            "aria-label",
+            `${label}: ${count.toLocaleString()} results`
+          );
+        }
+      };
+
       const render = () => {
+        updateFilterCounts();
+
         const visible = currentFilter === "all"
           ? currentResults
           : currentResults.filter(item => recordType(item) === currentFilter);
@@ -1075,6 +1207,7 @@
           if (error && error.name === "AbortError") return;
 
           currentResults = [];
+          updateFilterCounts();
           resultsNode.innerHTML = `
             <div class="empty">
               <strong>The field did not return a result.</strong>
@@ -1106,6 +1239,8 @@
           search(input.value);
         });
       });
+
+      updateFilterCounts();
 
       filters.forEach(button => {
         button.addEventListener("click", () => {

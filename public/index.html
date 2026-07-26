@@ -1806,6 +1806,8 @@
       let requestedResultCount = RESULT_BATCH_SIZE;
       let hasMoreResults = false;
       let loadingMoreResults = false;
+      let loadMoreObserver = null;
+      let loadMoreCheckTimer = 0;
       const excludedTargetKeys = new Set();
 
       const firstValue = (...values) => {
@@ -2841,6 +2843,58 @@
       };
 
 
+      const loadMoreIsNearViewport = () => {
+        if (
+          loadMoreNode.hidden ||
+          !hasMoreResults ||
+          !currentResults.length
+        ) {
+          return false;
+        }
+
+        const bounds =
+          loadMoreNode.getBoundingClientRect();
+
+        return (
+          bounds.top <=
+          window.innerHeight + 900
+        );
+      };
+
+      const scheduleLoadMoreCheck = (
+        delay = 90
+      ) => {
+        window.clearTimeout(
+          loadMoreCheckTimer
+        );
+
+        loadMoreCheckTimer =
+          window.setTimeout(() => {
+            if (
+              !loadingMoreResults &&
+              loadMoreIsNearViewport()
+            ) {
+              loadMoreResults();
+            }
+          }, delay);
+      };
+
+      const rearmLoadMoreObserver = () => {
+        if (!loadMoreObserver) return;
+
+        loadMoreObserver.unobserve(
+          loadMoreNode
+        );
+
+        window.requestAnimationFrame(() => {
+          loadMoreObserver.observe(
+            loadMoreNode
+          );
+
+          scheduleLoadMoreCheck(40);
+        });
+      };
+
       const updateLoadMore = () => {
         const loaded = currentResults.length;
         const nextStart = loaded + 1;
@@ -2869,6 +2923,10 @@
 
         loadMoreButton.textContent =
           `Load ${RESULT_BATCH_SIZE} more ↓`;
+
+        window.requestAnimationFrame(() => {
+          scheduleLoadMoreCheck(60);
+        });
       };
 
       const fetchRankedWindow = async (
@@ -2987,6 +3045,7 @@
         } finally {
           loadingMoreResults = false;
           updateLoadMore();
+          rearmLoadMoreObserver();
         }
       };
 
@@ -3035,7 +3094,7 @@
           statusNode.textContent =
             `${rows.length.toLocaleString()} ranked records loaded · ` +
             `${Number.isFinite(total) ? total.toLocaleString() : rows.length} candidates reported · ` +
-            `${hasMoreResults ? "scroll to extend the field" : "end of available field"}`;
+            `${hasMoreResults ? "continue scrolling or load 50 more" : "end of available field"}`;
         } catch (error) {
           if (error && error.name === "AbortError") return;
 
@@ -3218,7 +3277,7 @@
       );
 
       if ("IntersectionObserver" in window) {
-        const loadMoreObserver =
+        loadMoreObserver =
           new IntersectionObserver(
             entries => {
               if (
@@ -3226,18 +3285,32 @@
                   entry => entry.isIntersecting
                 )
               ) {
-                loadMoreResults();
+                scheduleLoadMoreCheck(0);
               }
             },
             {
               root: null,
-              rootMargin: "700px 0px",
+              rootMargin: "900px 0px",
               threshold: 0
             }
           );
 
-        loadMoreObserver.observe(loadMoreNode);
+        loadMoreObserver.observe(
+          loadMoreNode
+        );
       }
+
+      window.addEventListener(
+        "scroll",
+        () => scheduleLoadMoreCheck(70),
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "resize",
+        () => scheduleLoadMoreCheck(70),
+        { passive: true }
+      );
 
       form.addEventListener("submit", event => {
         event.preventDefault();

@@ -855,6 +855,383 @@
       color: var(--ink);
     }
 
+
+
+    /* CREATION INTERVENTION DESIGN */
+    .intervention-modal[hidden] {
+      display: none;
+    }
+
+    .intervention-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      overflow-y: auto;
+      padding: clamp(10px, 2vw, 26px);
+      background: rgba(17, 19, 16, .68);
+    }
+
+    .intervention-sheet {
+      width: min(1480px, 100%);
+      min-height: calc(100vh - clamp(20px, 4vw, 52px));
+      margin: 0 auto;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      box-shadow: 0 28px 110px rgba(0, 0, 0, .28);
+    }
+
+    .intervention-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .intervention-head-copy {
+      min-width: 0;
+      padding: 22px 24px 20px;
+    }
+
+    .intervention-title {
+      margin: 8px 0 0;
+      font-size: clamp(34px, 5vw, 78px);
+      line-height: .88;
+      letter-spacing: -.068em;
+      font-weight: 900;
+    }
+
+    .intervention-deck {
+      max-width: 74ch;
+      margin: 15px 0 0;
+      color: #353a34;
+      font-size: 14px;
+      line-height: 1.46;
+    }
+
+    .intervention-close {
+      width: 68px;
+      border: 0;
+      border-left: 1px solid var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .intervention-close:hover,
+    .intervention-close:focus-visible {
+      background: var(--signal);
+    }
+
+    .intervention-controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr) auto;
+      align-items: stretch;
+      border-bottom: 1px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .intervention-control-block {
+      min-width: 0;
+      padding: 16px 18px;
+      border-right: 1px solid var(--rule);
+    }
+
+    .intervention-mode-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .intervention-mode {
+      min-height: 39px;
+      padding: 0 12px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .intervention-mode[aria-pressed="true"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .intervention-generate {
+      min-width: 206px;
+      border: 0;
+      background: var(--signal);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .intervention-generate:hover,
+    .intervention-generate:focus-visible {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .intervention-generate:disabled {
+      cursor: wait;
+      opacity: .55;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      border-bottom: 1px solid var(--ink);
+      background: var(--panel);
+    }
+
+    .pipeline-stage {
+      min-width: 0;
+      min-height: 74px;
+      padding: 13px 12px;
+      border-right: 1px solid var(--rule);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.35;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .pipeline-stage:last-child {
+      border-right: 0;
+    }
+
+    .pipeline-stage strong {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .pipeline-stage[data-state="running"] {
+      background: var(--cyan);
+    }
+
+    .pipeline-stage[data-state="complete"] {
+      background: var(--signal);
+    }
+
+    .pipeline-stage[data-state="unavailable"] {
+      color: var(--muted);
+      background: var(--paper);
+    }
+
+    .intervention-status {
+      min-height: 44px;
+      padding: 13px 17px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.45;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .intervention-status.error {
+      color: var(--danger);
+    }
+
+    .candidate-field {
+      min-width: 0;
+    }
+
+    .candidate-empty {
+      min-height: 360px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(240px, 420px);
+      align-items: start;
+      gap: 34px;
+      padding: 34px 25px;
+      color: var(--muted);
+    }
+
+    .candidate-empty strong {
+      max-width: 16ch;
+      color: var(--ink);
+      font-size: clamp(30px, 4vw, 57px);
+      line-height: .94;
+      letter-spacing: -.055em;
+    }
+
+    .candidate-empty span {
+      max-width: 42ch;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .candidate-card {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+      border-bottom: 1px solid var(--rule);
+      background: var(--panel);
+    }
+
+    .candidate-rank {
+      padding: 20px 11px;
+      border-right: 1px solid var(--rule);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+    }
+
+    .candidate-main {
+      min-width: 0;
+      padding: 19px 20px 20px;
+    }
+
+    .candidate-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .candidate-name {
+      margin: 0;
+      font-size: clamp(20px, 2vw, 29px);
+      line-height: 1;
+      letter-spacing: -.04em;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .candidate-lane {
+      padding: 5px 7px 4px;
+      border: 1px solid var(--ink);
+      background: var(--paper);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .candidate-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 11px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .candidate-smiles {
+      margin: 14px 0 0;
+      padding: 11px 12px;
+      border: 1px solid var(--rule);
+      background: var(--paper);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .candidate-targets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .candidate-target {
+      padding: 6px 8px 5px;
+      border: 1px solid var(--rule);
+      background: var(--panel);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .candidate-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .candidate-action {
+      min-height: 34px;
+      padding: 8px 10px 7px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: .025em;
+      text-decoration: none;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .candidate-action.primary,
+    .candidate-action.selected {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .candidate-action:hover,
+    .candidate-action:focus-visible {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
+    .intervention-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 17px 20px;
+      border-top: 1px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .intervention-export {
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .intervention-export.primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .intervention-export:hover,
+    .intervention-export:focus-visible {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
     @media (max-width: 860px) {
       .shell {
         border-left: 0;
@@ -964,6 +1341,44 @@
 
       .program-target-meta {
         grid-column: 2 / -1;
+      }
+
+
+      .intervention-controls {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .intervention-control-block {
+        border-right: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .intervention-generate {
+        min-height: 52px;
+      }
+
+      .pipeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .pipeline-stage {
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .candidate-empty {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .candidate-card {
+        grid-template-columns: 42px minmax(0, 1fr);
+      }
+
+      .candidate-rank {
+        padding: 18px 8px;
+      }
+
+      .candidate-main {
+        padding: 17px 14px 18px;
       }
 
     }
@@ -1172,12 +1587,71 @@
           </div>
           <div class="program-target-list" id="programTargetList"></div>
           <div class="program-actions">
-            <button class="program-export primary" id="downloadProgramJson" type="button">Download manifest</button>
+            <button class="program-export primary" id="designIntervention" type="button">Design intervention →</button>
+            <button class="program-export" id="downloadProgramJson" type="button">Download manifest</button>
             <button class="program-export" id="downloadProgramCsv" type="button">Download targets CSV</button>
             <button class="program-export" id="copyProgramManifest" type="button">Copy manifest</button>
           </div>
         </div>
       </div>
+    </section>
+  </div>
+
+
+  <div class="intervention-modal" id="interventionModal" hidden aria-hidden="true">
+    <section class="intervention-sheet" role="dialog" aria-modal="true" aria-labelledby="interventionTitle">
+      <header class="intervention-head">
+        <div class="intervention-head-copy">
+          <span class="program-eyebrow">CREATION / Intervention design</span>
+          <h2 class="intervention-title" id="interventionTitle">Design the molecule field.</h2>
+          <p class="intervention-deck">The complete resonance-selected cell program becomes the intervention specification. CREATION first retrieves measured chemistry, then uses the configured local generator and evaluation workers when they are available.</p>
+        </div>
+        <button class="intervention-close" id="closeIntervention" type="button" aria-label="Close intervention design">×</button>
+      </header>
+
+      <div class="intervention-controls">
+        <div class="intervention-control-block">
+          <span class="program-label">Design lane</span>
+          <div class="intervention-mode-row" role="group" aria-label="Intervention design lane">
+            <button class="intervention-mode" type="button" data-intervention-mode="existing" aria-pressed="true">Existing chemistry</button>
+            <button class="intervention-mode" type="button" data-intervention-mode="combination" aria-pressed="false">Small combination</button>
+            <button class="intervention-mode" type="button" data-intervention-mode="de_novo" aria-pressed="false">Generate candidates</button>
+            <button class="intervention-mode" type="button" data-intervention-mode="all" aria-pressed="false">All lanes</button>
+          </div>
+        </div>
+
+        <div class="intervention-control-block">
+          <span class="program-label">Cell program</span>
+          <p class="program-value" id="interventionProgramSummary">0 targets · cell line not specified</p>
+        </div>
+
+        <button class="intervention-generate" id="runIntervention" type="button">Run design pipeline →</button>
+      </div>
+
+      <div class="pipeline" id="interventionPipeline" aria-label="Intervention pipeline">
+        <div class="pipeline-stage" data-stage="target_map" data-state="waiting">01 · Target map<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="known_chemistry" data-state="waiting">02 · Known chemistry<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="generation" data-state="waiting">03 · Generation<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="admet" data-state="waiting">04 · ADMET<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="binding" data-state="waiting">05 · Binding<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="synthesis" data-state="waiting">06 · Synthesis<strong>Waiting</strong></div>
+        <div class="pipeline-stage" data-stage="arbiter" data-state="waiting">07 · ARBITER<strong>Waiting</strong></div>
+      </div>
+
+      <div class="intervention-status" id="interventionStatus">Ready · no candidate design has been run</div>
+
+      <div class="candidate-field" id="candidateField">
+        <div class="candidate-empty">
+          <strong>The ranked biology becomes a chemical search space.</strong>
+          <span>Existing-compound retrieval runs through the live CREATION field server. Generated candidates, ADMET, docking, synthesis planning, and ARBITER ranking activate when their worker endpoints are configured.</span>
+        </div>
+      </div>
+
+      <footer class="intervention-footer">
+        <button class="intervention-export primary" id="exportInterventionJson" type="button" disabled>Download candidate field</button>
+        <button class="intervention-export" id="exportInterventionCsv" type="button" disabled>Download candidates CSV</button>
+        <button class="intervention-export" id="copyInterventionRequest" type="button">Copy design request</button>
+      </footer>
     </section>
   </div>
 
@@ -1211,6 +1685,18 @@
       const downloadProgramJsonButton = document.getElementById("downloadProgramJson");
       const downloadProgramCsvButton = document.getElementById("downloadProgramCsv");
       const copyProgramManifestButton = document.getElementById("copyProgramManifest");
+      const designInterventionButton = document.getElementById("designIntervention");
+      const interventionModal = document.getElementById("interventionModal");
+      const closeInterventionButton = document.getElementById("closeIntervention");
+      const runInterventionButton = document.getElementById("runIntervention");
+      const interventionProgramSummary = document.getElementById("interventionProgramSummary");
+      const interventionStatusNode = document.getElementById("interventionStatus");
+      const candidateFieldNode = document.getElementById("candidateField");
+      const interventionModeButtons = [...document.querySelectorAll("[data-intervention-mode]")];
+      const pipelineStages = [...document.querySelectorAll(".pipeline-stage")];
+      const exportInterventionJsonButton = document.getElementById("exportInterventionJson");
+      const exportInterventionCsvButton = document.getElementById("exportInterventionCsv");
+      const copyInterventionRequestButton = document.getElementById("copyInterventionRequest");
 
       let currentResults = [];
       let currentFilter = "all";
@@ -1219,6 +1705,9 @@
       let currentQuery = "";
       let programMode = "crispri";
       const selectedTargets = new Map();
+      let interventionMode = "existing";
+      let interventionResult = null;
+      const selectedCandidates = new Map();
 
       const firstValue = (...values) => {
         for (const value of values) {
@@ -1553,48 +2042,114 @@
 
 
 
+      const isAssemblyAccession = value =>
+        /^GC[AF]_\d+(?:\.\d+)?$/i.test(String(value || "").trim());
+
+      const canonicalTargetTitle = raw => {
+        let title = resultTitle(raw)
+          .replace(/\s+/g, " ")
+          .trim();
+
+        title = title
+          .replace(/\s+isoform(?:\s+[A-Za-z0-9._-]+)?(?:\s+(?:precursor|preproprotein))?$/i, "")
+          .replace(/\s+(?:precursor|preproprotein)$/i, "")
+          .replace(/\s+\([^)]+\)$/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        return title || resultTitle(raw);
+      };
+
       const targetSymbol = raw => {
         const { merged } = flattenRecord(raw);
-        return String(firstValue(
+
+        const candidates = [
           objectValue(merged, [
             "gene_symbol",
+            "geneSymbol",
+            "approved_symbol",
+            "hgnc_symbol",
             "symbol",
-            "gene",
-            "locus_tag",
-            "locus"
-          ]),
-          ""
-        )).trim();
+            "locus_tag"
+          ])
+        ];
+
+        for (const candidate of candidates.flat()) {
+          const value = String(candidate || "").trim();
+          if (!value || isAssemblyAccession(value)) continue;
+          if (/^[A-Za-z][A-Za-z0-9.-]{1,24}$/.test(value)) return value;
+        }
+
+        return "";
+      };
+
+      const targetProteinAccession = raw => {
+        const { merged } = flattenRecord(raw);
+
+        const candidates = [
+          objectValue(merged, [
+            "protein_accession",
+            "protein_accession_version",
+            "refseq_protein_accession",
+            "uniprot_accession",
+            "accession_version"
+          ])
+        ];
+
+        for (const candidate of candidates.flat()) {
+          const value = String(candidate || "").trim();
+
+          if (
+            /^(?:NP|XP|YP|WP|AP|P|Q|O)[A-Z0-9_]*(?:\.\d+)?$/i.test(value) &&
+            !isAssemblyAccession(value)
+          ) {
+            return value;
+          }
+        }
+
+        return "";
       };
 
       const isTargetable = raw => {
         const type = recordType(raw);
-        return Boolean(targetSymbol(raw)) || ["gene", "transcript", "protein"].includes(type);
+        return Boolean(
+          targetSymbol(raw) ||
+          targetProteinAccession(raw) ||
+          (
+            ["gene", "transcript", "protein"].includes(type) &&
+            canonicalTargetTitle(raw)
+          )
+        );
       };
 
       const targetKey = raw => {
         const symbol = targetSymbol(raw);
         if (symbol) return `symbol:${symbol.toUpperCase()}`;
 
-        const accession = normalizedAccession(raw);
-        if (accession) return `accession:${accession.toUpperCase()}`;
+        const proteinAccession = targetProteinAccession(raw);
+        if (proteinAccession) {
+          return `protein:${proteinAccession.toUpperCase()}`;
+        }
 
-        return `title:${resultTitle(raw).toUpperCase()}`;
+        return `title:${canonicalTargetTitle(raw).toUpperCase()}`;
       };
 
       const targetDescriptor = (raw, rank) => {
         const { merged } = flattenRecord(raw);
         const symbol = targetSymbol(raw);
-        const accession = normalizedAccession(raw);
+        const proteinAccession = targetProteinAccession(raw);
+        const title = canonicalTargetTitle(raw);
         const score = resultScore(raw);
 
         return {
           rank,
-          target: symbol || accession || resultTitle(raw),
+          target: symbol || title,
+          query: symbol || title,
           symbol,
-          title: resultTitle(raw),
+          title,
+          source_title: resultTitle(raw),
           type: recordType(raw),
-          accession,
+          accession: proteinAccession,
           resonance: score ? Number(score) : null,
           organism: String(firstValue(
             objectValue(merged, ["organism_name", "organism", "scientific_name"]),
@@ -1609,8 +2164,15 @@
 
         currentResults.forEach((raw, index) => {
           if (!isTargetable(raw)) return;
+
           const key = targetKey(raw);
-          if (!deduped.has(key)) deduped.set(key, { raw, rank: index + 1 });
+
+          if (!deduped.has(key)) {
+            deduped.set(key, {
+              raw,
+              rank: index + 1
+            });
+          }
         });
 
         return deduped;
@@ -1717,6 +2279,324 @@
         programModal.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
         openProgramButton.focus();
+      };
+
+
+
+      const interventionRequest = () => {
+        const cellProgram = programManifest();
+
+        return {
+          schema_version: 1,
+          platform: "CREATION",
+          request_id: `creation-${Date.now()}`,
+          intent: cellProgram.spoken_intent,
+          design_mode: interventionMode,
+          cell_program: cellProgram,
+          targets: cellProgram.targets.map(target => ({
+            rank: target.rank,
+            query: target.query || target.symbol || target.title,
+            symbol: target.symbol,
+            accession: target.accession,
+            title: target.title,
+            source_title: target.source_title,
+            resonance: target.resonance,
+            organism: target.organism
+          })),
+          constraints: {
+            route: "small_molecule",
+            oral_preference: true,
+            preserve_resonance_order: true,
+            max_existing_candidates: 24,
+            max_generated_candidates: 48,
+            max_combination_size: 3
+          }
+        };
+      };
+
+      const setPipelineStage = (stage, state, label) => {
+        const node = pipelineStages.find(item => item.dataset.stage === stage);
+        if (!node) return;
+        node.dataset.state = state;
+        const strong = node.querySelector("strong");
+        if (strong) strong.textContent = label || state;
+      };
+
+      const resetPipeline = () => {
+        pipelineStages.forEach(node => {
+          node.dataset.state = "waiting";
+          const strong = node.querySelector("strong");
+          if (strong) strong.textContent = "Waiting";
+        });
+      };
+
+      const applyPipeline = pipeline => {
+        const stages = pipeline && typeof pipeline === "object" ? pipeline : {};
+        for (const node of pipelineStages) {
+          const stage = node.dataset.stage;
+          const value = stages[stage];
+
+          if (!value) continue;
+
+          const state = typeof value === "string"
+            ? value
+            : value.state || "complete";
+
+          const label = typeof value === "string"
+            ? value
+            : value.label || value.detail || state;
+
+          setPipelineStage(stage, state, label);
+        }
+      };
+
+      const selectedCandidateValues = () => [...selectedCandidates.values()];
+
+      const candidateKey = candidate => String(
+        candidate.id ||
+        candidate.chembl_id ||
+        candidate.smiles ||
+        candidate.name
+      );
+
+      const toggleCandidate = key => {
+        const candidates = Array.isArray(interventionResult?.candidates)
+          ? interventionResult.candidates
+          : [];
+
+        const candidate = candidates.find(item => candidateKey(item) === key);
+        if (!candidate) return;
+
+        if (selectedCandidates.has(key)) {
+          selectedCandidates.delete(key);
+        } else {
+          selectedCandidates.set(key, candidate);
+        }
+
+        renderCandidates();
+      };
+
+      const candidateMetricPairs = candidate => {
+        const properties = candidate.properties || {};
+        const metrics = [];
+
+        const push = (label, value) => {
+          if (value === undefined || value === null || value === "") return;
+          metrics.push(`${label} · ${value}`);
+        };
+
+        push("source", candidate.source);
+        push("coverage", candidate.target_coverage_count ?? candidate.targets?.length);
+        push("pChEMBL", candidate.median_pchembl ?? candidate.best_pchembl);
+        push("MW", properties.full_mwt ?? properties.molecular_weight);
+        push("QED", properties.qed_weighted ?? properties.qed);
+        push("cLogP", properties.alogp ?? properties.logp);
+        push("phase", candidate.max_phase);
+        push("status", candidate.status);
+
+        return metrics;
+      };
+
+      const renderCandidates = () => {
+        const candidates = Array.isArray(interventionResult?.candidates)
+          ? interventionResult.candidates
+          : [];
+
+        exportInterventionJsonButton.disabled = candidates.length === 0;
+        exportInterventionCsvButton.disabled = candidates.length === 0;
+
+        if (!candidates.length) {
+          candidateFieldNode.innerHTML = `
+            <div class="candidate-empty">
+              <strong>No physical candidates returned yet.</strong>
+              <span>${escapeHtml(interventionResult?.message || "The configured chemistry sources did not return a candidate.")}</span>
+            </div>
+          `;
+          return;
+        }
+
+        candidateFieldNode.innerHTML = candidates.map((candidate, index) => {
+          const key = candidateKey(candidate);
+          const selected = selectedCandidates.has(key);
+          const targets = Array.isArray(candidate.targets)
+            ? candidate.targets
+            : Array.isArray(candidate.target_symbols)
+              ? candidate.target_symbols
+              : [];
+
+          const metrics = candidateMetricPairs(candidate)
+            .map(item => `<span>${escapeHtml(item)}</span>`)
+            .join("");
+
+          const targetNodes = targets
+            .map(target => {
+              const symbol = typeof target === "string"
+                ? target
+                : target.symbol || target.target || target.name;
+              return symbol
+                ? `<span class="candidate-target">${escapeHtml(symbol)}</span>`
+                : "";
+            })
+            .join("");
+
+          const sourceUrl = safeHttpsUrl(candidate.url || candidate.chembl_url || "");
+          const sourceAction = sourceUrl
+            ? `<a class="candidate-action" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>`
+            : "";
+
+          return `
+            <article class="candidate-card">
+              <div class="candidate-rank">${String(index + 1).padStart(2, "0")}</div>
+              <div class="candidate-main">
+                <div class="candidate-top">
+                  <h3 class="candidate-name">${escapeHtml(candidate.name || candidate.id || "Untitled candidate")}</h3>
+                  <span class="candidate-lane">${escapeHtml(candidate.lane || "candidate")}</span>
+                </div>
+                ${metrics ? `<div class="candidate-metrics">${metrics}</div>` : ""}
+                ${candidate.smiles ? `<div class="candidate-smiles">${escapeHtml(candidate.smiles)}</div>` : ""}
+                ${targetNodes ? `<div class="candidate-targets">${targetNodes}</div>` : ""}
+                <div class="candidate-actions">
+                  <button class="candidate-action primary candidate-select${selected ? " selected" : ""}" type="button" data-candidate-key="${escapeHtml(key)}">${selected ? "Added to assay ✓" : "Add to cell assay"}</button>
+                  ${candidate.smiles ? `<button class="candidate-action candidate-copy-smiles" type="button" data-smiles="${escapeHtml(candidate.smiles)}">Copy SMILES</button>` : ""}
+                  ${sourceAction}
+                </div>
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        candidateFieldNode.querySelectorAll(".candidate-select").forEach(button => {
+          button.addEventListener("click", () => toggleCandidate(button.dataset.candidateKey));
+        });
+
+        candidateFieldNode.querySelectorAll(".candidate-copy-smiles").forEach(button => {
+          button.addEventListener("click", () => copyText(button.dataset.smiles));
+        });
+      };
+
+      const openIntervention = () => {
+        closeProgram();
+
+        const manifest = programManifest();
+        interventionProgramSummary.textContent =
+          `${manifest.target_count.toLocaleString()} targets · ` +
+          `${manifest.program.cell_line || "cell line not specified"} · ` +
+          `${manifest.program.perturbation_mode.toUpperCase()}`;
+
+        resetPipeline();
+        interventionResult = null;
+        selectedCandidates.clear();
+        renderCandidates();
+
+        interventionModal.hidden = false;
+        interventionModal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        runInterventionButton.focus();
+      };
+
+      const closeIntervention = () => {
+        interventionModal.hidden = true;
+        interventionModal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        openProgramButton.focus();
+      };
+
+      const runIntervention = async () => {
+        const request = interventionRequest();
+
+        runInterventionButton.disabled = true;
+        runInterventionButton.textContent = "Designing…";
+        interventionStatusNode.textContent = "Mapping the resonance-selected biology into the chemical field";
+        interventionStatusNode.classList.remove("error");
+        resetPipeline();
+        setPipelineStage("target_map", "running", "Mapping");
+
+        try {
+          const response = await fetch("/field/v1/intervention/design", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(request)
+          });
+
+          const contentType = String(
+            response.headers.get("content-type") || ""
+          ).toLowerCase();
+
+          const rawBody = await response.text();
+
+          if (!contentType.includes("application/json")) {
+            throw new Error(
+              "INTERVENTION API NOT DEPLOYED · expected JSON but received " +
+              (contentType || "an unknown content type")
+            );
+          }
+
+          let payload;
+
+          try {
+            payload = JSON.parse(rawBody);
+          } catch {
+            throw new Error(
+              "INTERVENTION API RETURNED INVALID JSON"
+            );
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              payload.error ||
+              payload.detail ||
+              `Design API returned HTTP ${response.status}`
+            );
+          }
+
+          const validPayload =
+            payload &&
+            typeof payload === "object" &&
+            typeof payload.provider === "string" &&
+            payload.pipeline &&
+            typeof payload.pipeline === "object" &&
+            Array.isArray(payload.resolved_targets) &&
+            Array.isArray(payload.candidates);
+
+          if (!validPayload) {
+            throw new Error(
+              "INTERVENTION API NOT DEPLOYED · response schema was incomplete"
+            );
+          }
+
+          interventionResult = payload;
+          selectedCandidates.clear();
+          applyPipeline(payload.pipeline);
+          renderCandidates();
+
+          const candidateCount = Array.isArray(payload.candidates)
+            ? payload.candidates.length
+            : 0;
+
+          interventionStatusNode.textContent =
+            `${candidateCount.toLocaleString()} physical candidates · ` +
+            `${payload.resolved_targets?.length || 0} targets mapped · ` +
+            `${payload.provider || "CREATION chemistry"}`;
+        } catch (error) {
+          interventionResult = {
+            candidates: [],
+            message: error?.message || "Intervention design failed"
+          };
+          pipelineStages.forEach(node => {
+            node.dataset.state = "unavailable";
+            const strong = node.querySelector("strong");
+            if (strong) strong.textContent = "Unavailable";
+          });
+          interventionStatusNode.textContent = error?.message || "Intervention design failed";
+          interventionStatusNode.classList.add("error");
+          renderCandidates();
+        } finally {
+          runInterventionButton.disabled = false;
+          runInterventionButton.textContent = "Run design pipeline →";
+        }
       };
 
       const copyText = async text => {
@@ -1907,6 +2787,80 @@
 
 
 
+
+
+      designInterventionButton.addEventListener("click", openIntervention);
+      closeInterventionButton.addEventListener("click", closeIntervention);
+      runInterventionButton.addEventListener("click", runIntervention);
+
+      interventionModal.addEventListener("click", event => {
+        if (event.target === interventionModal) closeIntervention();
+      });
+
+      interventionModeButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          interventionMode = button.dataset.interventionMode || "existing";
+          interventionModeButtons.forEach(item => item.setAttribute(
+            "aria-pressed",
+            item === button ? "true" : "false"
+          ));
+        });
+      });
+
+      copyInterventionRequestButton.addEventListener("click", async () => {
+        await copyText(JSON.stringify(interventionRequest(), null, 2));
+        copyInterventionRequestButton.textContent = "Copied ✓";
+        window.setTimeout(() => {
+          copyInterventionRequestButton.textContent = "Copy design request";
+        }, 1400);
+      });
+
+      exportInterventionJsonButton.addEventListener("click", () => {
+        if (!interventionResult) return;
+
+        const exportPayload = {
+          ...interventionResult,
+          cell_program: programManifest(),
+          selected_for_cell_assay: selectedCandidateValues()
+        };
+
+        downloadBlob(
+          `${filenameSafe(currentQuery)}-candidate-field.json`,
+          "application/json",
+          JSON.stringify(exportPayload, null, 2)
+        );
+      });
+
+      exportInterventionCsvButton.addEventListener("click", () => {
+        const candidates = Array.isArray(interventionResult?.candidates)
+          ? interventionResult.candidates
+          : [];
+
+        const quote = value => `"${String(value ?? "").replaceAll('"', '""')}"`;
+        const rows = [
+          ["rank", "id", "name", "lane", "source", "smiles", "targets", "median_pchembl", "molecular_weight", "qed", "url"],
+          ...candidates.map((candidate, index) => [
+            index + 1,
+            candidate.id || candidate.chembl_id,
+            candidate.name,
+            candidate.lane,
+            candidate.source,
+            candidate.smiles,
+            (candidate.targets || []).map(target => typeof target === "string" ? target : target.symbol || target.target).filter(Boolean).join(";"),
+            candidate.median_pchembl ?? candidate.best_pchembl ?? "",
+            candidate.properties?.full_mwt ?? candidate.properties?.molecular_weight ?? "",
+            candidate.properties?.qed_weighted ?? candidate.properties?.qed ?? "",
+            candidate.url || candidate.chembl_url || ""
+          ])
+        ];
+
+        downloadBlob(
+          `${filenameSafe(currentQuery)}-candidate-field.csv`,
+          "text/csv;charset=utf-8",
+          rows.map(row => row.map(quote).join(",")).join("\n")
+        );
+      });
+
       selectAllTargetsButton.addEventListener("click", () => {
         selectEveryTarget();
         render();
@@ -1926,6 +2880,7 @@
 
       document.addEventListener("keydown", event => {
         if (event.key === "Escape" && !programModal.hidden) closeProgram();
+        if (event.key === "Escape" && !interventionModal.hidden) closeIntervention();
       });
 
       modeButtons.forEach(button => {

@@ -492,6 +492,369 @@
       100% { transform: scaleX(.05) translateX(1900%); }
     }
 
+
+
+    /* CREATION CELL PROGRAM */
+    .program-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      align-items: stretch;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      background: var(--signal);
+    }
+
+    .program-summary {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.3;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .program-summary strong {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .program-summary span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .program-control {
+      min-width: 96px;
+      padding: 0 15px;
+      border: 0;
+      border-left: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .program-control:hover,
+    .program-control:focus-visible {
+      background: var(--panel);
+    }
+
+    .program-control.primary {
+      min-width: 192px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .program-control.primary:hover,
+    .program-control.primary:focus-visible {
+      background: #2f332e;
+    }
+
+    .program-control:disabled {
+      cursor: not-allowed;
+      opacity: .42;
+    }
+
+    .action.target-toggle.selected {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
+    .program-modal[hidden] {
+      display: none;
+    }
+
+    .program-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      overflow-y: auto;
+      background: rgba(17, 19, 16, .62);
+      padding: clamp(12px, 3vw, 34px);
+    }
+
+    .program-sheet {
+      width: min(1180px, 100%);
+      min-height: calc(100vh - clamp(24px, 6vw, 68px));
+      margin: 0 auto;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, .24);
+    }
+
+    .program-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .program-head-copy {
+      min-width: 0;
+      padding: 22px 24px 20px;
+    }
+
+    .program-eyebrow,
+    .program-label {
+      display: block;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.3;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .program-title {
+      margin: 8px 0 0;
+      font-size: clamp(31px, 4.4vw, 62px);
+      line-height: .91;
+      letter-spacing: -.06em;
+      font-weight: 900;
+    }
+
+    .program-deck {
+      max-width: 67ch;
+      margin: 13px 0 0;
+      color: #353a34;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .program-close {
+      width: 66px;
+      border: 0;
+      border-left: 1px solid var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .program-close:hover,
+    .program-close:focus-visible {
+      background: var(--signal);
+    }
+
+    .program-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+      min-width: 0;
+    }
+
+    .program-config {
+      min-width: 0;
+      border-right: 1px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .program-block {
+      padding: 20px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .program-block:last-child {
+      border-bottom: 0;
+    }
+
+    .program-query {
+      margin: 8px 0 0;
+      font-size: 19px;
+      line-height: 1.18;
+      letter-spacing: -.025em;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .program-value {
+      margin: 8px 0 0;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .program-input {
+      width: 100%;
+      height: 46px;
+      margin-top: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--ink);
+      outline: 0;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .program-input:focus {
+      box-shadow: inset 0 -3px 0 var(--signal);
+    }
+
+    .mode-row,
+    .readout-grid {
+      display: grid;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .mode-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mode-button {
+      min-height: 40px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .readout-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .readout-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 0;
+      padding: 9px;
+      border: 1px solid var(--rule);
+      background: var(--panel);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.35;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .readout-option input {
+      flex: 0 0 auto;
+      margin: 1px 0 0;
+      accent-color: var(--ink);
+    }
+
+    .program-targets {
+      min-width: 0;
+      background: var(--panel);
+    }
+
+    .program-targets-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 20px;
+      padding: 20px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .program-targets-count {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .program-target-list {
+      max-height: min(58vh, 640px);
+      overflow-y: auto;
+    }
+
+    .program-target-row {
+      display: grid;
+      grid-template-columns: 48px minmax(120px, .75fr) minmax(180px, 1.45fr) auto;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .program-target-rank,
+    .program-target-meta,
+    .program-target-score {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.35;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .program-target-rank,
+    .program-target-meta,
+    .program-target-score {
+      color: var(--muted);
+    }
+
+    .program-target-name {
+      min-width: 0;
+      font-size: 15px;
+      line-height: 1.18;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .program-target-meta {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .program-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 18px 20px 20px;
+      border-top: 1px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .program-export {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .program-export.primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .program-export:hover,
+    .program-export:focus-visible {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
     @media (max-width: 860px) {
       .shell {
         border-left: 0;
@@ -567,6 +930,42 @@
       .result-topline {
         gap: 12px;
       }
+
+      .program-bar {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .program-summary {
+        grid-column: 1 / -1;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .program-control.secondary {
+        display: none;
+      }
+
+      .program-control.primary {
+        min-height: 48px;
+        min-width: 0;
+      }
+
+      .program-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .program-config {
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .program-target-row {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+      }
+
+      .program-target-meta {
+        grid-column: 2 / -1;
+      }
+
     }
 
     @media (max-width: 520px) {
@@ -690,6 +1089,16 @@
         <div class="status" id="status">Ready · results open directly to authoritative NCBI records</div>
         <div id="loading" hidden><div class="loading-bar"></div></div>
 
+        <div class="program-bar" id="programBar" hidden>
+          <div class="program-summary">
+            <strong id="programCount">0 targets</strong>
+            <span>One resonance set · one cell population · simultaneous perturbation</span>
+          </div>
+          <button class="program-control secondary" id="selectAllTargets" type="button">Select all</button>
+          <button class="program-control secondary" id="clearTargets" type="button">Clear</button>
+          <button class="program-control primary" id="openProgram" type="button">Create cell program →</button>
+        </div>
+
         <div class="results" id="results">
           <div class="empty">
             <strong>No generated answer. Only the ranked field.</strong>
@@ -702,6 +1111,76 @@
       </section>
     </div>
   </main>
+
+  <div class="program-modal" id="programModal" hidden aria-hidden="true">
+    <section class="program-sheet" role="dialog" aria-modal="true" aria-labelledby="programTitle">
+      <header class="program-head">
+        <div class="program-head-copy">
+          <span class="program-eyebrow">CREATION / Cell program</span>
+          <h2 class="program-title" id="programTitle">Make the ranked field physical.</h2>
+          <p class="program-deck">Every selected target is carried forward as one simultaneous perturbation program. The cell population becomes the readout.</p>
+        </div>
+        <button class="program-close" id="closeProgram" type="button" aria-label="Close cell program">×</button>
+      </header>
+
+      <div class="program-grid">
+        <aside class="program-config">
+          <div class="program-block">
+            <span class="program-label">Spoken intent</span>
+            <p class="program-query" id="programQuery">—</p>
+          </div>
+
+          <div class="program-block">
+            <span class="program-label">Perturbation mode</span>
+            <div class="mode-row" role="group" aria-label="Perturbation mode">
+              <button class="mode-button" type="button" data-program-mode="crispri" aria-pressed="true">CRISPRi</button>
+              <button class="mode-button" type="button" data-program-mode="crispra" aria-pressed="false">CRISPRa</button>
+              <button class="mode-button" type="button" data-program-mode="knockout" aria-pressed="false">Knockout</button>
+            </div>
+          </div>
+
+          <div class="program-block">
+            <label class="program-label" for="cellLineInput">Cell line</label>
+            <input class="program-input" id="cellLineInput" type="text" autocomplete="off" placeholder="Name the cell line">
+          </div>
+
+          <div class="program-block">
+            <span class="program-label">Architecture</span>
+            <p class="program-value">Single multiplex program<br>Complete resonance set delivered together</p>
+          </div>
+
+          <div class="program-block">
+            <span class="program-label">Phenotype capture</span>
+            <div class="readout-grid">
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="live imaging" checked>Live imaging</label>
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="morphology" checked>Morphology</label>
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="growth and viability" checked>Growth / viability</label>
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="reporter activity">Reporter activity</label>
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="endpoint transcriptome">Endpoint transcriptome</label>
+              <label class="readout-option"><input type="checkbox" name="programReadout" value="secreted factors">Secreted factors</label>
+            </div>
+          </div>
+        </aside>
+
+        <div class="program-targets">
+          <div class="program-targets-head">
+            <div>
+              <span class="program-label">Resonance-ranked target set</span>
+              <p class="program-value">No decomposition. No secondary ranking. The selected field is preserved in order.</p>
+            </div>
+            <div class="program-targets-count" id="programTargetCount">0 targets</div>
+          </div>
+          <div class="program-target-list" id="programTargetList"></div>
+          <div class="program-actions">
+            <button class="program-export primary" id="downloadProgramJson" type="button">Download manifest</button>
+            <button class="program-export" id="downloadProgramCsv" type="button">Download targets CSV</button>
+            <button class="program-export" id="copyProgramManifest" type="button">Copy manifest</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
 
   <script>
     (() => {
@@ -716,10 +1195,30 @@
       const filters = [...document.querySelectorAll(".filter")];
       const examples = [...document.querySelectorAll(".example")];
 
+      const programBar = document.getElementById("programBar");
+      const programCountNode = document.getElementById("programCount");
+      const selectAllTargetsButton = document.getElementById("selectAllTargets");
+      const clearTargetsButton = document.getElementById("clearTargets");
+      const openProgramButton = document.getElementById("openProgram");
+      const programModal = document.getElementById("programModal");
+      const closeProgramButton = document.getElementById("closeProgram");
+      const programQueryNode = document.getElementById("programQuery");
+      const programTargetCountNode = document.getElementById("programTargetCount");
+      const programTargetListNode = document.getElementById("programTargetList");
+      const cellLineInput = document.getElementById("cellLineInput");
+      const modeButtons = [...document.querySelectorAll("[data-program-mode]")];
+      const readoutInputs = [...document.querySelectorAll('input[name="programReadout"]')];
+      const downloadProgramJsonButton = document.getElementById("downloadProgramJson");
+      const downloadProgramCsvButton = document.getElementById("downloadProgramCsv");
+      const copyProgramManifestButton = document.getElementById("copyProgramManifest");
+
       let currentResults = [];
       let currentFilter = "all";
       let controller = null;
       let debounceTimer = null;
+      let currentQuery = "";
+      let programMode = "crispri";
+      const selectedTargets = new Map();
 
       const firstValue = (...values) => {
         for (const value of values) {
@@ -1052,6 +1551,174 @@
         return pairs.slice(0, 6);
       };
 
+
+
+      const targetSymbol = raw => {
+        const { merged } = flattenRecord(raw);
+        return String(firstValue(
+          objectValue(merged, [
+            "gene_symbol",
+            "symbol",
+            "gene",
+            "locus_tag",
+            "locus"
+          ]),
+          ""
+        )).trim();
+      };
+
+      const isTargetable = raw => {
+        const type = recordType(raw);
+        return Boolean(targetSymbol(raw)) || ["gene", "transcript", "protein"].includes(type);
+      };
+
+      const targetKey = raw => {
+        const symbol = targetSymbol(raw);
+        if (symbol) return `symbol:${symbol.toUpperCase()}`;
+
+        const accession = normalizedAccession(raw);
+        if (accession) return `accession:${accession.toUpperCase()}`;
+
+        return `title:${resultTitle(raw).toUpperCase()}`;
+      };
+
+      const targetDescriptor = (raw, rank) => {
+        const { merged } = flattenRecord(raw);
+        const symbol = targetSymbol(raw);
+        const accession = normalizedAccession(raw);
+        const score = resultScore(raw);
+
+        return {
+          rank,
+          target: symbol || accession || resultTitle(raw),
+          symbol,
+          title: resultTitle(raw),
+          type: recordType(raw),
+          accession,
+          resonance: score ? Number(score) : null,
+          organism: String(firstValue(
+            objectValue(merged, ["organism_name", "organism", "scientific_name"]),
+            ""
+          )).trim(),
+          ncbi_url: ncbiUrlFor(raw)
+        };
+      };
+
+      const allTargetable = () => {
+        const deduped = new Map();
+
+        currentResults.forEach((raw, index) => {
+          if (!isTargetable(raw)) return;
+          const key = targetKey(raw);
+          if (!deduped.has(key)) deduped.set(key, { raw, rank: index + 1 });
+        });
+
+        return deduped;
+      };
+
+      const selectedDescriptors = () => [...selectedTargets.values()]
+        .map(item => targetDescriptor(item.raw, item.rank))
+        .sort((left, right) => left.rank - right.rank);
+
+      const updateProgramBar = () => {
+        const available = allTargetable();
+        const count = selectedTargets.size;
+
+        programBar.hidden = available.size === 0;
+        programCountNode.textContent = `${count.toLocaleString()} ${count === 1 ? "target" : "targets"}`;
+        openProgramButton.disabled = count === 0;
+        clearTargetsButton.disabled = count === 0;
+        selectAllTargetsButton.disabled = available.size > 0 && count === available.size;
+      };
+
+      const selectEveryTarget = () => {
+        selectedTargets.clear();
+        for (const [key, value] of allTargetable()) selectedTargets.set(key, value);
+        updateProgramBar();
+      };
+
+      const toggleTarget = key => {
+        if (selectedTargets.has(key)) {
+          selectedTargets.delete(key);
+        } else {
+          const available = allTargetable();
+          const value = available.get(key);
+          if (value) selectedTargets.set(key, value);
+        }
+        render();
+      };
+
+      const filenameSafe = value => String(value || "creation-cell-program")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 72) || "creation-cell-program";
+
+      const programManifest = () => ({
+        schema_version: 1,
+        platform: "CREATION",
+        generated_at: new Date().toISOString(),
+        spoken_intent: currentQuery || input.value.trim(),
+        program: {
+          strategy: "simultaneous resonance-set perturbation",
+          perturbation_mode: programMode,
+          architecture: "single multiplex program",
+          cell_line: cellLineInput.value.trim(),
+          phenotype_capture: readoutInputs
+            .filter(item => item.checked)
+            .map(item => item.value)
+        },
+        target_count: selectedTargets.size,
+        targets: selectedDescriptors()
+      });
+
+      const downloadBlob = (name, type, body) => {
+        const url = URL.createObjectURL(new Blob([body], { type }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      };
+
+      const renderProgram = () => {
+        const targets = selectedDescriptors();
+        const count = targets.length;
+
+        programQueryNode.textContent = currentQuery || input.value.trim() || "Untitled biological intent";
+        programTargetCountNode.textContent = `${count.toLocaleString()} ${count === 1 ? "target" : "targets"}`;
+        programTargetListNode.innerHTML = targets.map(target => `
+          <div class="program-target-row">
+            <div class="program-target-rank">${String(target.rank).padStart(2, "0")}</div>
+            <div class="program-target-name">${escapeHtml(target.target)}</div>
+            <div class="program-target-meta">${escapeHtml([
+              target.type,
+              target.accession,
+              target.organism
+            ].filter(Boolean).join(" · "))}</div>
+            <div class="program-target-score">${target.resonance === null ? "" : `resonance ${target.resonance.toFixed(3)}`}</div>
+          </div>
+        `).join("");
+      };
+
+      const openProgram = () => {
+        if (!selectedTargets.size) return;
+        renderProgram();
+        programModal.hidden = false;
+        programModal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        closeProgramButton.focus();
+      };
+
+      const closeProgram = () => {
+        programModal.hidden = true;
+        programModal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        openProgramButton.focus();
+      };
+
       const copyText = async text => {
         if (!text) return;
         try {
@@ -1121,6 +1788,9 @@
           const score = resultScore(raw);
           const accession = normalizedAccession(raw);
           const ncbiUrl = ncbiUrlFor(raw);
+          const actualRank = currentResults.indexOf(raw) + 1;
+          const key = isTargetable(raw) ? targetKey(raw) : "";
+          const selected = key && selectedTargets.has(key);
           const metadata = metadataPairs(raw)
             .map(item => `<span>${escapeHtml(item.label)} · ${escapeHtml(item.value)}</span>`)
             .join("");
@@ -1133,9 +1803,13 @@
             ? `<button class="action copy-accession" type="button" data-accession="${escapeHtml(accession)}">Copy accession</button>`
             : "";
 
+          const targetAction = key
+            ? `<button class="action target-toggle${selected ? " selected" : ""}" type="button" data-target-key="${escapeHtml(key)}">${selected ? "In cell program ✓" : "Add to cell program"}</button>`
+            : "";
+
           return `
             <article class="result">
-              <div class="rank">${String(index + 1).padStart(2, "0")}</div>
+              <div class="rank">${String(actualRank).padStart(2, "0")}</div>
               <div class="result-main">
                 <div class="result-topline">
                   <h2 class="result-title">${escapeHtml(title)}</h2>
@@ -1143,7 +1817,7 @@
                 </div>
                 ${metadata ? `<div class="metadata">${metadata}</div>` : ""}
                 ${description ? `<p class="description">${escapeHtml(description)}</p>` : ""}
-                ${(ncbiAction || copyAction) ? `<div class="actions">${ncbiAction}${copyAction}</div>` : ""}
+                ${(ncbiAction || copyAction || targetAction) ? `<div class="actions">${targetAction}${ncbiAction}${copyAction}</div>` : ""}
               </div>
             </article>
           `;
@@ -1152,6 +1826,12 @@
         resultsNode.querySelectorAll(".copy-accession").forEach(button => {
           button.addEventListener("click", () => copyText(button.dataset.accession));
         });
+
+        resultsNode.querySelectorAll(".target-toggle").forEach(button => {
+          button.addEventListener("click", () => toggleTarget(button.dataset.targetKey));
+        });
+
+        updateProgramBar();
       };
 
       const setLoading = loading => {
@@ -1197,6 +1877,8 @@
           }
 
           currentResults = rows;
+          currentQuery = q;
+          selectEveryTarget();
           render();
 
           const total = Number(payload.total || payload.count || rows.length);
@@ -1207,6 +1889,8 @@
           if (error && error.name === "AbortError") return;
 
           currentResults = [];
+          selectedTargets.clear();
+          updateProgramBar();
           updateFilterCounts();
           resultsNode.innerHTML = `
             <div class="empty">
@@ -1220,6 +1904,74 @@
           setLoading(false);
         }
       };
+
+
+
+      selectAllTargetsButton.addEventListener("click", () => {
+        selectEveryTarget();
+        render();
+      });
+
+      clearTargetsButton.addEventListener("click", () => {
+        selectedTargets.clear();
+        render();
+      });
+
+      openProgramButton.addEventListener("click", openProgram);
+      closeProgramButton.addEventListener("click", closeProgram);
+
+      programModal.addEventListener("click", event => {
+        if (event.target === programModal) closeProgram();
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !programModal.hidden) closeProgram();
+      });
+
+      modeButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          programMode = button.dataset.programMode || "crispri";
+          modeButtons.forEach(item => item.setAttribute(
+            "aria-pressed",
+            item === button ? "true" : "false"
+          ));
+        });
+      });
+
+      copyProgramManifestButton.addEventListener("click", async () => {
+        const body = JSON.stringify(programManifest(), null, 2);
+        await copyText(body);
+        copyProgramManifestButton.textContent = "Copied ✓";
+        window.setTimeout(() => {
+          copyProgramManifestButton.textContent = "Copy manifest";
+        }, 1400);
+      });
+
+      downloadProgramJsonButton.addEventListener("click", () => {
+        const manifest = programManifest();
+        const name = `${filenameSafe(manifest.spoken_intent)}-cell-program.json`;
+        downloadBlob(name, "application/json", JSON.stringify(manifest, null, 2));
+      });
+
+      downloadProgramCsvButton.addEventListener("click", () => {
+        const targets = selectedDescriptors();
+        const quote = value => `"${String(value ?? "").replaceAll('"', '""')}"`;
+        const rows = [
+          ["rank", "target", "symbol", "type", "accession", "resonance", "organism", "ncbi_url"],
+          ...targets.map(target => [
+            target.rank,
+            target.target,
+            target.symbol,
+            target.type,
+            target.accession,
+            target.resonance ?? "",
+            target.organism,
+            target.ncbi_url
+          ])
+        ];
+        const csv = rows.map(row => row.map(quote).join(",")).join("\\n");
+        downloadBlob(`${filenameSafe(currentQuery)}-targets.csv`, "text/csv;charset=utf-8", csv);
+      });
 
       form.addEventListener("submit", event => {
         event.preventDefault();
@@ -1241,6 +1993,7 @@
       });
 
       updateFilterCounts();
+      updateProgramBar();
 
       filters.forEach(button => {
         button.addEventListener("click", () => {

@@ -1232,6 +1232,78 @@
       color: var(--ink);
     }
 
+
+
+    /* CREATION EXPANDING RESONANCE WINDOW */
+    .load-more {
+      min-height: 66px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+      border-bottom: 1px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .load-more[hidden] {
+      display: none;
+    }
+
+    .load-more-copy {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      padding: 14px 18px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.4;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .load-more-button {
+      min-width: 172px;
+      padding: 0 18px;
+      border: 0;
+      border-left: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .load-more-button:hover,
+    .load-more-button:focus-visible {
+      background: var(--signal);
+    }
+
+    .load-more-button:disabled {
+      cursor: wait;
+      color: var(--muted);
+      background: var(--paper);
+    }
+
+    .load-more[data-loading="true"] {
+      background:
+        linear-gradient(
+          90deg,
+          var(--cyan) 0%,
+          var(--paper) 45%,
+          var(--cyan) 100%
+        );
+      background-size: 220% 100%;
+      animation: resonance-window 1.15s linear infinite;
+    }
+
+    @keyframes resonance-window {
+      from { background-position: 100% 0; }
+      to { background-position: -120% 0; }
+    }
+
     @media (max-width: 860px) {
       .shell {
         border-left: 0;
@@ -1381,6 +1453,17 @@
         padding: 17px 14px 18px;
       }
 
+
+      .load-more {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .load-more-button {
+        min-height: 48px;
+        border-top: 1px solid var(--ink);
+        border-left: 0;
+      }
+
     }
 
     @media (max-width: 520px) {
@@ -1522,6 +1605,14 @@
               corresponding NCBI record whenever one can be resolved.
             </span>
           </div>
+        </div>
+        <div class="load-more" id="loadMore" hidden data-loading="false">
+          <div class="load-more-copy" id="loadMoreCopy">
+            50 ranked records loaded · continue through the field
+          </div>
+          <button class="load-more-button" id="loadMoreButton" type="button">
+            Load 50 more ↓
+          </button>
         </div>
       </section>
     </div>
@@ -1697,6 +1788,9 @@
       const exportInterventionJsonButton = document.getElementById("exportInterventionJson");
       const exportInterventionCsvButton = document.getElementById("exportInterventionCsv");
       const copyInterventionRequestButton = document.getElementById("copyInterventionRequest");
+      const loadMoreNode = document.getElementById("loadMore");
+      const loadMoreCopyNode = document.getElementById("loadMoreCopy");
+      const loadMoreButton = document.getElementById("loadMoreButton");
 
       let currentResults = [];
       let currentFilter = "all";
@@ -1708,6 +1802,11 @@
       let interventionMode = "existing";
       let interventionResult = null;
       const selectedCandidates = new Map();
+      const RESULT_BATCH_SIZE = 50;
+      let requestedResultCount = RESULT_BATCH_SIZE;
+      let hasMoreResults = false;
+      let loadingMoreResults = false;
+      const excludedTargetKeys = new Set();
 
       const firstValue = (...values) => {
         for (const value of values) {
@@ -2193,20 +2292,47 @@
         selectAllTargetsButton.disabled = available.size > 0 && count === available.size;
       };
 
-      const selectEveryTarget = () => {
+      const selectEveryTarget = ({ resetExclusions = false } = {}) => {
+        if (resetExclusions) excludedTargetKeys.clear();
+
         selectedTargets.clear();
-        for (const [key, value] of allTargetable()) selectedTargets.set(key, value);
+
+        for (const [key, value] of allTargetable()) {
+          if (!excludedTargetKeys.has(key)) {
+            selectedTargets.set(key, value);
+          }
+        }
+
+        updateProgramBar();
+      };
+
+      const selectNewlyLoadedTargets = () => {
+        for (const [key, value] of allTargetable()) {
+          if (
+            !selectedTargets.has(key) &&
+            !excludedTargetKeys.has(key)
+          ) {
+            selectedTargets.set(key, value);
+          }
+        }
+
         updateProgramBar();
       };
 
       const toggleTarget = key => {
         if (selectedTargets.has(key)) {
           selectedTargets.delete(key);
+          excludedTargetKeys.add(key);
         } else {
           const available = allTargetable();
           const value = available.get(key);
-          if (value) selectedTargets.set(key, value);
+
+          if (value) {
+            selectedTargets.set(key, value);
+            excludedTargetKeys.delete(key);
+          }
         }
+
         render();
       };
 
@@ -2714,6 +2840,156 @@
         updateProgramBar();
       };
 
+
+      const updateLoadMore = () => {
+        const loaded = currentResults.length;
+        const nextStart = loaded + 1;
+        const nextEnd = loaded + RESULT_BATCH_SIZE;
+
+        loadMoreNode.hidden = !(
+          loaded > 0 &&
+          hasMoreResults
+        );
+
+        loadMoreNode.dataset.loading =
+          loadingMoreResults ? "true" : "false";
+
+        loadMoreButton.disabled = loadingMoreResults;
+
+        if (loadingMoreResults) {
+          loadMoreCopyNode.textContent =
+            `Measuring ranks ${nextStart.toLocaleString()}–${nextEnd.toLocaleString()} against the field`;
+
+          loadMoreButton.textContent = "Loading…";
+          return;
+        }
+
+        loadMoreCopyNode.textContent =
+          `${loaded.toLocaleString()} ranked records loaded · continue through the field`;
+
+        loadMoreButton.textContent =
+          `Load ${RESULT_BATCH_SIZE} more ↓`;
+      };
+
+      const fetchRankedWindow = async (
+        query,
+        requestedCount,
+        signal
+      ) => {
+        const response = await fetch("/field/v1/search", {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            text: query,
+            q: query,
+            k: requestedCount
+          }),
+          signal
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Search returned HTTP ${response.status}`
+          );
+        }
+
+        const payload = await response.json();
+        const rows =
+          payload.results ||
+          payload.matches ||
+          payload.items ||
+          [];
+
+        if (!Array.isArray(rows)) {
+          throw new Error(
+            "Search response did not contain a result array"
+          );
+        }
+
+        return {
+          payload,
+          rows
+        };
+      };
+
+      const loadMoreResults = async () => {
+        if (
+          loadingMoreResults ||
+          !hasMoreResults ||
+          !currentQuery ||
+          !currentResults.length
+        ) {
+          return;
+        }
+
+        loadingMoreResults = true;
+        updateLoadMore();
+
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        const previousCount = currentResults.length;
+        const requestedCount =
+          previousCount + RESULT_BATCH_SIZE;
+
+        try {
+          const { payload, rows } =
+            await fetchRankedWindow(
+              currentQuery,
+              requestedCount,
+              controller.signal
+            );
+
+          if (rows.length <= previousCount) {
+            hasMoreResults = false;
+
+            statusNode.textContent =
+              `${previousCount.toLocaleString()} ranked records · end of available result window`;
+
+            return;
+          }
+
+          currentResults = rows;
+          requestedResultCount = requestedCount;
+          hasMoreResults =
+            rows.length >= requestedCount;
+
+          selectNewlyLoadedTargets();
+          render();
+
+          const added = rows.length - previousCount;
+          const total = Number(
+            payload.total ||
+            payload.count ||
+            rows.length
+          );
+
+          statusNode.textContent =
+            `${rows.length.toLocaleString()} ranked records loaded · ` +
+            `${added.toLocaleString()} new · ` +
+            `${Number.isFinite(total) ? total.toLocaleString() : rows.length} candidates reported`;
+        } catch (error) {
+          if (
+            error &&
+            error.name === "AbortError"
+          ) {
+            return;
+          }
+
+          statusNode.textContent =
+            error?.message ||
+            "Could not extend the ranked field";
+
+          statusNode.classList.add("error");
+        } finally {
+          loadingMoreResults = false;
+          updateLoadMore();
+        }
+      };
+
       const setLoading = loading => {
         loadingNode.hidden = !loading;
         input.setAttribute("aria-busy", loading ? "true" : "false");
@@ -2727,49 +3003,48 @@
         controller = new AbortController();
 
         setLoading(true);
+        hasMoreResults = false;
+        loadingMoreResults = false;
+        updateLoadMore();
         statusNode.textContent = "Measuring query against the live field";
         statusNode.classList.remove("error");
 
         try {
-          const response = await fetch("/field/v1/search", {
-            method: "POST",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              text: q,
+          requestedResultCount = RESULT_BATCH_SIZE;
+
+          const { payload, rows } =
+            await fetchRankedWindow(
               q,
-              k: 50
-            }),
-            signal: controller.signal
-          });
-
-          if (!response.ok) {
-            throw new Error(`Search returned HTTP ${response.status}`);
-          }
-
-          const payload = await response.json();
-          const rows = payload.results || payload.matches || payload.items || [];
-
-          if (!Array.isArray(rows)) {
-            throw new Error("Search response did not contain a result array");
-          }
+              requestedResultCount,
+              controller.signal
+            );
 
           currentResults = rows;
           currentQuery = q;
-          selectEveryTarget();
+          hasMoreResults =
+            rows.length >= requestedResultCount;
+
+          excludedTargetKeys.clear();
+          selectEveryTarget({
+            resetExclusions: true
+          });
           render();
+          updateLoadMore();
 
           const total = Number(payload.total || payload.count || rows.length);
           statusNode.textContent =
-            `${Number.isFinite(total) ? total.toLocaleString() : rows.length} candidates · ` +
-            `${rows.length} ranked records returned · direct NCBI links restored`;
+            `${rows.length.toLocaleString()} ranked records loaded · ` +
+            `${Number.isFinite(total) ? total.toLocaleString() : rows.length} candidates reported · ` +
+            `${hasMoreResults ? "scroll to extend the field" : "end of available field"}`;
         } catch (error) {
           if (error && error.name === "AbortError") return;
 
           currentResults = [];
           selectedTargets.clear();
+          excludedTargetKeys.clear();
+          hasMoreResults = false;
+          loadingMoreResults = false;
+          updateLoadMore();
           updateProgramBar();
           updateFilterCounts();
           resultsNode.innerHTML = `
@@ -2862,12 +3137,20 @@
       });
 
       selectAllTargetsButton.addEventListener("click", () => {
-        selectEveryTarget();
+        excludedTargetKeys.clear();
+        selectEveryTarget({
+          resetExclusions: true
+        });
         render();
       });
 
       clearTargetsButton.addEventListener("click", () => {
         selectedTargets.clear();
+
+        for (const key of allTargetable().keys()) {
+          excludedTargetKeys.add(key);
+        }
+
         render();
       });
 
@@ -2928,6 +3211,34 @@
         downloadBlob(`${filenameSafe(currentQuery)}-targets.csv`, "text/csv;charset=utf-8", csv);
       });
 
+
+      loadMoreButton.addEventListener(
+        "click",
+        loadMoreResults
+      );
+
+      if ("IntersectionObserver" in window) {
+        const loadMoreObserver =
+          new IntersectionObserver(
+            entries => {
+              if (
+                entries.some(
+                  entry => entry.isIntersecting
+                )
+              ) {
+                loadMoreResults();
+              }
+            },
+            {
+              root: null,
+              rootMargin: "700px 0px",
+              threshold: 0
+            }
+          );
+
+        loadMoreObserver.observe(loadMoreNode);
+      }
+
       form.addEventListener("submit", event => {
         event.preventDefault();
         search(input.value);
@@ -2949,6 +3260,7 @@
 
       updateFilterCounts();
       updateProgramBar();
+      updateLoadMore();
 
       filters.forEach(button => {
         button.addEventListener("click", () => {

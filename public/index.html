@@ -1,867 +1,1352 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#06090C" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#E9E7E0" media="(prefers-color-scheme: light)">
-<meta name="description" content="CREATION searches NCBI genome objects by biological meaning through ARBITER.">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>CREATION — genome field</title>
-<script>
-(() => {
-  try {
-    document.documentElement.dataset.theme =
-      localStorage.getItem("creation-theme") || "dark";
-  } catch {
-    document.documentElement.dataset.theme = "dark";
-  }
-})();
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;600&display=swap">
-<style>
-:root{
-  color-scheme:dark;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4f5f0">
+  <meta
+    name="description"
+    content="CREATION searches genome data by biological meaning. Powered by ARBITER."
+  >
+  <title>CREATION — Search genome data by meaning</title>
+  <style>
+    :root {
+      --paper: #f4f5f0;
+      --panel: #ffffff;
+      --ink: #111310;
+      --muted: #646a62;
+      --rule: #c9cec5;
+      --soft: #e8ebe4;
+      --signal: #b9ff2c;
+      --cyan: #bcecf2;
+      --danger: #8c281f;
+      --max: 1560px;
+    }
 
-  --void:#06090C;
-  --plate:#0B1015;
-  --plate-2:#0E141A;
-  --rule:#1B242D;
-  --rule-strong:#2B3742;
-  --ink:#E7EEF3;
-  --dim:#74889A;
-  --faint:#4C5C6A;
-  --gold:#E9B23C;
-  --gold-ink:#06090C;
-  --alarm:#FF6B76;
-  --shade:rgba(6,9,12,.94);
+    * {
+      box-sizing: border-box;
+    }
 
-  --ch-assembly:#E9B23C;
-  --ch-sequence:#4FA3FF;
-  --ch-gene:#3FD39A;
-  --ch-transcript:#B98CF5;
-  --ch-cds:#FF9457;
-  --ch-protein:#FF6B8A;
-  --ch-other:#7D91A1;
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+    }
 
-  --tap:46px;
-  --pad:max(16px, env(safe-area-inset-left));
-  --pad-r:max(16px, env(safe-area-inset-right));
+    body {
+      margin: 0;
+      min-width: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --sans:"IBM Plex Sans",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
-  --display:"Archivo","Archivo Expanded","Helvetica Neue",Arial,sans-serif;
-}
-html[data-theme="light"]{
-  color-scheme:light;
+    button,
+    input {
+      font: inherit;
+    }
 
-  --void:#E9E7E0;
-  --plate:#F4F2EC;
-  --plate-2:#EFEDE6;
-  --rule:#CFCCC2;
-  --rule-strong:#ADA99D;
-  --ink:#0D1116;
-  --dim:#5C6672;
-  --faint:#8A9099;
-  --gold:#8A6410;
-  --gold-ink:#F4F2EC;
-  --alarm:#A32330;
-  --shade:rgba(233,231,224,.94);
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  --ch-assembly:#8A6410;
-  --ch-sequence:#1E5FBF;
-  --ch-gene:#0F7A54;
-  --ch-transcript:#6B3FB5;
-  --ch-cds:#B24A11;
-  --ch-protein:#B01F44;
-  --ch-other:#5C6672;
-}
+    a {
+      color: inherit;
+    }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
-body{
-  min-height:100vh;
-  min-height:100dvh;
-  background:var(--void);
-  color:var(--ink);
-  font-family:var(--sans);
-  font-size:16px;
-  line-height:1.5;
-  overflow-x:hidden;
-  overscroll-behavior-y:none;
-  -webkit-font-smoothing:antialiased;
-  padding-bottom:env(safe-area-inset-bottom);
-}
-button,input{font:inherit;color:inherit;border-radius:0}
-button{cursor:pointer}
-:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+    .shell {
+      width: min(100%, var(--max));
+      min-height: 100vh;
+      margin: 0 auto;
+      border-left: 1px solid var(--rule);
+      border-right: 1px solid var(--rule);
+      background: var(--panel);
+    }
 
-/* ── masthead + measure bar ─────────────────────────────── */
-.top{
-  position:sticky;
-  top:0;
-  z-index:20;
-  background:var(--shade);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--rule);
-  padding-top:env(safe-area-inset-top);
-}
-.masthead{
-  height:52px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:0 var(--pad-r) 0 var(--pad);
-}
-.mark{
-  display:inline-flex;
-  align-items:baseline;
-  gap:8px;
-  text-decoration:none;
-  color:inherit;
-  margin-right:auto;
-  min-width:0;
-}
-.mark-word{
-  font-family:var(--display);
-  font-variation-settings:"wdth" 125;
-  font-weight:700;
-  font-size:19px;
-  line-height:1;
-  letter-spacing:.015em;
-}
-.tally{
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.04em;
-  color:var(--dim);
-  white-space:nowrap;
-  font-variant-numeric:tabular-nums;
-}
-.theme-btn{
-  width:var(--tap);
-  height:var(--tap);
-  display:grid;
-  place-items:center;
-  background:none;
-  border:1px solid var(--rule);
-  color:var(--dim);
-  flex:0 0 auto;
-}
-.theme-btn:hover{border-color:var(--rule-strong);color:var(--ink)}
-.theme-dot{
-  width:11px;height:11px;border-radius:50%;
-  border:1px solid currentColor;
-  background:linear-gradient(90deg,currentColor 50%,transparent 50%);
-}
+    .mast {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+      border-bottom: 1px solid var(--ink);
+    }
 
-.measure{
-  display:flex;
-  border-top:1px solid var(--rule);
-  background:var(--plate);
-}
-.measure input{
-  flex:1 1 auto;
-  min-width:0;
-  height:56px;
-  border:0;
-  background:none;
-  padding:0 14px 0 var(--pad);
-  font-size:16px;
-  letter-spacing:-.01em;
-}
-.measure input::placeholder{color:var(--faint)}
-.measure input:focus{outline:none;background:var(--plate-2)}
-.measure button{
-  flex:0 0 auto;
-  height:56px;
-  min-width:112px;
-  padding:0 20px;
-  padding-right:max(20px, env(safe-area-inset-right));
-  border:0;
-  border-left:1px solid var(--rule);
-  background:var(--gold);
-  color:var(--gold-ink);
-  font-family:var(--mono);
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:.12em;
-}
-.measure button:active{filter:brightness(.9)}
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 17px 22px 15px;
+    }
 
-/* ── channels ───────────────────────────────────────────── */
-.channels{
-  display:flex;
-  gap:6px;
-  overflow-x:auto;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-  padding:10px var(--pad-r) 10px var(--pad);
-  border-bottom:1px solid var(--rule);
-  background:var(--void);
-}
-.channels::-webkit-scrollbar{display:none}
-.chan{
-  flex:0 0 auto;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  padding:0 11px;
-  border:1px solid var(--rule);
-  background:none;
-  color:var(--dim);
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.09em;
-  white-space:nowrap;
-}
-.chan-dot{width:6px;height:6px;flex:0 0 auto;background:var(--c,var(--ch-other))}
-.chan-n{font-variant-numeric:tabular-nums;color:var(--faint)}
-.chan[aria-pressed="true"]{
-  border-color:var(--c,var(--gold));
-  color:var(--ink);
-}
-.chan[aria-pressed="true"] .chan-n{color:var(--c,var(--gold))}
-.chan[disabled]{opacity:.35}
+    .brand-name {
+      font-size: clamp(20px, 2.2vw, 31px);
+      line-height: .9;
+      letter-spacing: -.055em;
+      font-weight: 900;
+      white-space: nowrap;
+    }
 
-/* ── readout ────────────────────────────────────────────── */
-.readout{
-  border-bottom:1px solid var(--rule);
-  background:var(--plate);
-}
-.line{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:11px var(--pad-r) 11px var(--pad);
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.09em;
-  color:var(--dim);
-  font-variant-numeric:tabular-nums;
-}
-.line b{font-weight:500;color:var(--ink)}
-.readout.fault .line{color:var(--alarm)}
-.readout.fault .line b{color:var(--alarm)}
+    .brand-meta {
+      min-width: 0;
+      padding-left: 18px;
+      border-left: 1px solid var(--rule);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1.25;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
 
-/* signature: the field trace */
-.trace{
-  display:flex;
-  align-items:flex-end;
-  gap:1px;
-  height:54px;
-  padding:0 var(--pad-r) 0 var(--pad);
-  border-top:1px solid var(--rule);
-  background:
-    repeating-linear-gradient(to right,var(--rule) 0 1px,transparent 1px 40px);
-  background-position:var(--pad) 0;
-  overflow:hidden;
-}
-.trace[hidden]{display:none}
-.tick{
-  flex:1 1 0;
-  min-width:2px;
-  padding:0;
-  border:0;
-  border-radius:0;
-  background:var(--c,var(--ch-other));
-  opacity:.62;
-  transform-origin:bottom;
-  animation:rise .42s cubic-bezier(.2,.9,.3,1) backwards;
-}
-.tick:hover,.tick.lit{opacity:1}
-@keyframes rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+    .field-stat {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-width: 245px;
+      padding: 14px 22px;
+      border-left: 1px solid var(--ink);
+      background: var(--signal);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
 
-.scan{height:2px;background:var(--rule)}
-.scan[hidden]{display:none}
-.scan::after{
-  content:"";
-  display:block;
-  height:100%;
-  width:26%;
-  background:var(--gold);
-  animation:sweep .9s linear infinite;
-}
-@keyframes sweep{from{transform:translateX(-110%)}to{transform:translateX(460%)}}
+    .workspace {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(285px, 390px) minmax(0, 1fr);
+    }
 
-/* ── records ────────────────────────────────────────────── */
-.record{
-  display:block;
-  border-bottom:1px solid var(--rule);
-  padding:18px var(--pad-r) 20px var(--pad);
-  scroll-margin-top:190px;
-}
-.record.lit{background:var(--plate-2)}
-.stamp{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.1em;
-  color:var(--c,var(--ch-other));
-  font-variant-numeric:tabular-nums;
-}
-.stamp .rank{color:var(--faint)}
-.stamp .org{
-  color:var(--dim);
-  letter-spacing:.02em;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.name{
-  font-size:20px;
-  line-height:1.2;
-  letter-spacing:-.02em;
-  font-weight:450;
-  margin:9px 0 0;
-  overflow-wrap:anywhere;
-}
-.gist{
-  margin:8px 0 0;
-  font-size:14px;
-  line-height:1.55;
-  color:var(--dim);
-  overflow-wrap:anywhere;
-  display:-webkit-box;
-  -webkit-line-clamp:4;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-.resonance{
-  display:flex;
-  align-items:baseline;
-  gap:9px;
-  margin-top:14px;
-  font-family:var(--mono);
-  font-variant-numeric:tabular-nums;
-}
-.resonance .v{font-size:19px;font-weight:500;letter-spacing:-.01em}
-.resonance .l{font-size:9px;letter-spacing:.14em;color:var(--faint)}
-.gauge{height:2px;margin-top:7px;background:var(--rule)}
-.gauge i{display:block;height:100%;background:var(--c,var(--gold))}
-.ids{
-  margin-top:12px;
-  font-family:var(--mono);
-  font-size:10px;
-  line-height:1.7;
-  color:var(--faint);
-  letter-spacing:.03em;
-  overflow-wrap:anywhere;
-}
-.ids b{color:var(--dim);font-weight:400}
-.acts{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
-.act{
-  height:38px;
-  display:inline-flex;
-  align-items:center;
-  padding:0 12px;
-  border:1px solid var(--rule);
-  background:none;
-  color:var(--dim);
-  text-decoration:none;
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.09em;
-}
-.act:hover{border-color:var(--rule-strong);color:var(--ink)}
-.act.primary{border-color:var(--rule-strong);color:var(--ink)}
+    .intro {
+      min-width: 0;
+      min-height: calc(100vh - 66px);
+      padding: 34px 28px 28px;
+      border-right: 1px solid var(--ink);
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 48px;
+    }
 
-/* ── prompts + states ───────────────────────────────────── */
-.void{
-  padding:44px var(--pad-r) 44px var(--pad);
-  color:var(--dim);
-  font-size:15px;
-  line-height:1.6;
-  max-width:52ch;
-}
-.void b{display:block;color:var(--ink);font-weight:450;margin-bottom:6px}
-.void.fault b{color:var(--alarm)}
+    .kicker {
+      margin: 0 0 18px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1.25;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
 
-.starters{border-top:1px solid var(--rule);padding:22px var(--pad-r) 34px var(--pad)}
-.starters h2{
-  margin:0 0 12px;
-  font-family:var(--mono);
-  font-size:10px;
-  font-weight:500;
-  letter-spacing:.14em;
-  color:var(--faint);
-}
-.starter{
-  display:block;
-  width:100%;
-  text-align:left;
-  border:0;
-  border-top:1px solid var(--rule);
-  background:none;
-  color:var(--dim);
-  padding:14px 0;
-  font-size:14px;
-  line-height:1.4;
-}
-.starter:first-of-type{border-top:0}
-.starter:hover{color:var(--ink)}
-.starter::before{content:"→ ";color:var(--gold)}
+    h1 {
+      max-width: 10ch;
+      margin: 0;
+      font-size: clamp(43px, 5.3vw, 76px);
+      line-height: .89;
+      letter-spacing: -.068em;
+      font-weight: 900;
+    }
 
-.colophon{
-  border-top:1px solid var(--rule);
-  padding:20px var(--pad-r) 34px var(--pad);
-  font-family:var(--mono);
-  font-size:10px;
-  line-height:1.9;
-  letter-spacing:.06em;
-  color:var(--faint);
-}
+    .intro-copy {
+      max-width: 30ch;
+      margin: 25px 0 0;
+      color: #353a34;
+      font-size: 15px;
+      line-height: 1.43;
+    }
 
-/* ── desktop ────────────────────────────────────────────── */
-@media (min-width:900px){
-  :root{--pad:32px;--pad-r:32px}
-  .masthead{height:60px}
-  .mark-word{font-size:22px}
-  .measure input{height:60px;font-size:17px}
-  .measure button{height:60px;padding:0 26px}
-  .trace{height:76px}
-  .frame{display:grid;grid-template-columns:minmax(0,1fr) 340px;align-items:start}
-  .rail{
-    position:sticky;
-    top:170px;
-    border-left:1px solid var(--rule);
-    align-self:stretch;
-  }
-  .starters{border-top:0}
-  .record{padding:22px 32px 24px;scroll-margin-top:200px}
-  .name{font-size:23px;max-width:60ch}
-  .gist{font-size:14.5px;max-width:74ch}
-  .record .resonance{margin-top:16px}
-  .gauge{max-width:420px}
-}
+    .system-note {
+      border-top: 1px solid var(--rule);
+      padding-top: 17px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.55;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
 
-@media (prefers-reduced-motion:reduce){
-  *{animation:none!important;transition:none!important}
-  .scan::after{width:100%}
-}
-</style>
+    .search-area {
+      min-width: 0;
+      background: var(--panel);
+    }
+
+    .query-panel {
+      min-width: 0;
+      padding: 26px;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .query-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.3;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .query-form {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+    }
+
+    .query-input {
+      width: 100%;
+      min-width: 0;
+      height: 68px;
+      margin: 0;
+      padding: 0 20px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: clamp(17px, 1.6vw, 22px);
+      line-height: 1;
+      letter-spacing: -.025em;
+    }
+
+    .query-input::placeholder {
+      color: #8a9087;
+      opacity: 1;
+    }
+
+    .submit {
+      min-width: 112px;
+      padding: 0 20px;
+      border: 0;
+      border-left: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .submit:hover,
+    .submit:focus-visible {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    .example {
+      max-width: 100%;
+      padding: 8px 10px 7px;
+      border: 1px solid var(--rule);
+      background: var(--paper);
+      color: #30352f;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.25;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .example:hover,
+    .example:focus-visible {
+      border-color: var(--ink);
+      background: var(--cyan);
+    }
+
+    .filters {
+      min-width: 0;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--rule);
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter {
+      flex: 0 0 auto;
+      padding: 13px 15px 12px;
+      border: 0;
+      border-right: 1px solid var(--rule);
+      background: var(--panel);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 9px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .filter[aria-pressed="true"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .status {
+      min-width: 0;
+      min-height: 43px;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.4;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .results {
+      min-width: 0;
+    }
+
+    .empty {
+      min-height: 420px;
+      padding: 34px 26px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+      color: var(--muted);
+    }
+
+    .empty strong {
+      max-width: 20ch;
+      color: var(--ink);
+      font-size: clamp(27px, 3vw, 45px);
+      line-height: .98;
+      letter-spacing: -.05em;
+    }
+
+    .empty span {
+      max-width: 31ch;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .result {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      border-bottom: 1px solid var(--rule);
+      background: var(--panel);
+    }
+
+    .rank {
+      padding: 20px 12px;
+      border-right: 1px solid var(--rule);
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .result-main {
+      min-width: 0;
+      padding: 18px 20px 19px;
+    }
+
+    .result-topline {
+      min-width: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .result-title {
+      min-width: 0;
+      margin: 0;
+      font-size: clamp(18px, 1.7vw, 25px);
+      line-height: 1.03;
+      letter-spacing: -.038em;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .score {
+      flex: 0 0 auto;
+      padding-top: 2px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .metadata {
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      letter-spacing: .025em;
+      text-transform: uppercase;
+    }
+
+    .description {
+      max-width: 80ch;
+      margin: 13px 0 0;
+      color: #353a34;
+      font-size: 13px;
+      line-height: 1.48;
+      overflow-wrap: anywhere;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 10px 7px;
+      border: 1px solid var(--ink);
+      background: var(--panel);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: .025em;
+      text-decoration: none;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .action.primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .action:hover,
+    .action:focus-visible {
+      background: var(--signal);
+      color: var(--ink);
+    }
+
+    .loading-bar {
+      height: 3px;
+      background: var(--signal);
+      transform-origin: left center;
+      animation: loading 1.1s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: scaleX(.05); }
+      50% { transform: scaleX(.72); }
+      100% { transform: scaleX(.05) translateX(1900%); }
+    }
+
+    @media (max-width: 860px) {
+      .shell {
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .mast {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .field-stat {
+        min-width: 0;
+        justify-content: flex-start;
+        border-top: 1px solid var(--ink);
+        border-left: 0;
+      }
+
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .intro {
+        min-height: auto;
+        padding: 27px 20px 24px;
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+        gap: 34px;
+      }
+
+      h1 {
+        max-width: 9ch;
+        font-size: clamp(43px, 14vw, 68px);
+      }
+
+      .query-panel {
+        padding: 18px 14px;
+      }
+
+      .query-form {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .query-input {
+        height: 62px;
+        padding: 0 14px;
+      }
+
+      .submit {
+        min-height: 48px;
+        border-top: 1px solid var(--ink);
+        border-left: 0;
+      }
+
+      .empty {
+        min-height: 300px;
+        padding: 28px 18px;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .result {
+        grid-template-columns: 42px minmax(0, 1fr);
+      }
+
+      .rank {
+        padding: 18px 9px;
+      }
+
+      .result-main {
+        padding: 17px 14px 18px;
+      }
+
+      .result-topline {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .brand {
+        padding: 15px 14px 13px;
+        gap: 12px;
+      }
+
+      .brand-meta {
+        padding-left: 12px;
+        font-size: 9px;
+      }
+
+      .field-stat {
+        padding: 11px 14px;
+      }
+
+      .intro {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .query-label {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .result-topline {
+        display: block;
+      }
+
+      .score {
+        margin-top: 8px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .loading-bar {
+        animation: none;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="shell">
+    <header class="mast">
+      <div class="brand">
+        <div class="brand-name">CREATION</div>
+        <div class="brand-meta">Powered by ARBITER<br>Genome meaning field</div>
+      </div>
+      <div class="field-stat" id="fieldStat">Connecting to live field</div>
+    </header>
 
-<div class="top">
-  <div class="masthead">
-    <a class="mark" href="#" aria-label="CREATION">
-      <span class="mark-word">CREATION</span>
-    </a>
-    <span class="tally" id="tally">FIELD LOADING</span>
-    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to light theme" aria-pressed="false">
-      <span class="theme-dot" aria-hidden="true"></span>
-    </button>
-  </div>
+    <div class="workspace">
+      <aside class="intro">
+        <div>
+          <p class="kicker">Biological search / deterministic ranking</p>
+          <h1>Search the genome by meaning.</h1>
+          <p class="intro-copy">
+            Describe a biological function, mechanism, phenotype, or relationship.
+            CREATION ranks the most coherent genome records without generating an answer.
+          </p>
+        </div>
 
-  <form class="measure" id="form" role="search">
-    <input
-      id="q"
-      type="search"
-      inputmode="search"
-      enterkeyhint="search"
-      autocomplete="off"
-      autocorrect="off"
-      autocapitalize="off"
-      spellcheck="false"
-      placeholder="Describe the biology"
-      aria-label="Describe the biology you want to find"
-      value="genes involved in DNA double-strand break repair"
-    >
-    <button type="submit">RESOLVE</button>
-  </form>
-</div>
+        <div class="system-note">
+          Live NCBI-derived field<br>
+          Query embedded at runtime<br>
+          Ranked in frozen 72D geometry
+        </div>
+      </aside>
 
-<nav class="channels" id="channels" aria-label="Filter by object class"></nav>
+      <section class="search-area" aria-label="Genome search">
+        <div class="query-panel">
+          <div class="query-label">
+            <span>Describe the biology</span>
+            <span id="queryMode">Live semantic search</span>
+          </div>
 
-<div class="readout" id="readout">
-  <div class="line">
-    <span id="state">CONNECTING</span>
-    <span id="clock"></span>
-  </div>
-  <div class="trace" id="trace" role="img" aria-label="Resonance trace across returned objects" hidden></div>
-  <div class="scan" id="scan" hidden></div>
-</div>
+          <form class="query-form" id="queryForm">
+            <input
+              class="query-input"
+              id="queryInput"
+              name="query"
+              type="search"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="e.g. homologous recombination after double-strand DNA damage"
+              aria-label="Search genome data by biological meaning"
+            >
+            <button class="submit" type="submit">Search</button>
+          </form>
 
-<div class="frame">
-  <main id="list"></main>
+          <div class="examples" aria-label="Example searches">
+            <button class="example" type="button">genes involved in homologous recombination repair</button>
+            <button class="example" type="button">proteins controlling mitochondrial quality and mitophagy</button>
+            <button class="example" type="button">transcripts associated with neural crest development</button>
+          </div>
+        </div>
 
-  <aside class="rail">
-    <section class="starters">
-      <h2>QUERIES TO TRY</h2>
-      <button class="starter" type="button">proteins connecting DNA repair and chromatin remodeling</button>
-      <button class="starter" type="button">mitochondrial sequences involved in oxidative phosphorylation</button>
-      <button class="starter" type="button">bacterial proteins associated with antibiotic resistance</button>
-      <button class="starter" type="button">developmental transcription factors conserved across animals</button>
-      <button class="starter" type="button">genes regulating programmed cell death</button>
-    </section>
-    <div class="colophon">
-      NCBI GENOME OBJECTS<br>
-      ASSEMBLY · SEQUENCE · GENE · TRANSCRIPT · CDS · PROTEIN<br>
-      MEASURED BY ARBITER — 26MB, 72D, DETERMINISTIC<br>
-      RANKING ONLY. NO GENERATED TEXT.
+        <nav class="filters" aria-label="Result type filters">
+          <button class="filter" type="button" data-filter="all" data-label="All" aria-pressed="true">
+            <span>All</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="assembly" data-label="Assemblies" aria-pressed="false">
+            <span>Assemblies</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="gene" data-label="Genes" aria-pressed="false">
+            <span>Genes</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="transcript" data-label="Transcripts" aria-pressed="false">
+            <span>Transcripts</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="protein" data-label="Proteins" aria-pressed="false">
+            <span>Proteins</span><span class="filter-count">0</span>
+          </button>
+          <button class="filter" type="button" data-filter="sequence" data-label="Sequences" aria-pressed="false">
+            <span>Sequences</span><span class="filter-count">0</span>
+          </button>
+        </nav>
+
+        <div class="status" id="status">Ready · results open directly to authoritative NCBI records</div>
+        <div id="loading" hidden><div class="loading-bar"></div></div>
+
+        <div class="results" id="results">
+          <div class="empty">
+            <strong>No generated answer. Only the ranked field.</strong>
+            <span>
+              Search results preserve the underlying identifiers and expose the
+              corresponding NCBI record whenever one can be resolved.
+            </span>
+          </div>
+        </div>
+      </section>
     </div>
-  </aside>
-</div>
+  </main>
 
-<script>
-const MANIFEST_URL = "/field/v1/manifest";
-const SEARCH_URL = "/field/v1/search";
+  <script>
+    (() => {
+      "use strict";
 
-const CHANNELS = [
-  { key:"",           label:"ALL",         color:"var(--gold)" },
-  { key:"assembly",   label:"ASSEMBLY",    color:"var(--ch-assembly)" },
-  { key:"sequence",   label:"SEQUENCE",    color:"var(--ch-sequence)" },
-  { key:"gene",       label:"GENE",        color:"var(--ch-gene)" },
-  { key:"transcript", label:"TRANSCRIPT",  color:"var(--ch-transcript)" },
-  { key:"cds",        label:"CDS",         color:"var(--ch-cds)" },
-  { key:"protein",    label:"PROTEIN",     color:"var(--ch-protein)" },
-  { key:"other",      label:"OTHER",       color:"var(--ch-other)" }
-];
+      const form = document.getElementById("queryForm");
+      const input = document.getElementById("queryInput");
+      const resultsNode = document.getElementById("results");
+      const statusNode = document.getElementById("status");
+      const loadingNode = document.getElementById("loading");
+      const fieldStatNode = document.getElementById("fieldStat");
+      const filters = [...document.querySelectorAll(".filter")];
+      const examples = [...document.querySelectorAll(".example")];
 
-const el = id => document.getElementById(id);
-const qInput = el("q");
-const list = el("list");
-const state = el("state");
-const clock = el("clock");
-const tally = el("tally");
-const scan = el("scan");
-const trace = el("trace");
-const readout = el("readout");
-const channelBar = el("channels");
-const themeBtn = el("themeBtn");
+      let currentResults = [];
+      let currentFilter = "all";
+      let controller = null;
+      let debounceTimer = null;
 
-let activeChannel = "";
-let rows = [];
-let elapsedMs = 0;
-let debounce = null;
-let controller = null;
+      const firstValue = (...values) => {
+        for (const value of values) {
+          if (value !== undefined && value !== null && String(value).trim() !== "") {
+            return value;
+          }
+        }
+        return "";
+      };
 
-/* ── theme ──────────────────────────────────────────────── */
-const syncTheme = () => {
-  const light = document.documentElement.dataset.theme === "light";
-  themeBtn.setAttribute("aria-pressed", light ? "true" : "false");
-  themeBtn.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
-};
-themeBtn.addEventListener("click", () => {
-  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("creation-theme", next); } catch {}
-  syncTheme();
-});
-syncTheme();
+      const objectValue = (object, keys) => {
+        if (!object || typeof object !== "object") return "";
+        for (const key of keys) {
+          const value = object[key];
+          if (value !== undefined && value !== null && String(value).trim() !== "") {
+            return value;
+          }
+        }
+        return "";
+      };
 
-/* ── helpers (field contract preserved) ─────────────────── */
-const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-})[c]);
+      const escapeHtml = value => String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
-const has = v => v !== undefined && v !== null && String(v).trim() !== "";
-const first = (...vals) => { for (const v of vals) if (has(v)) return v; return ""; };
+      const safeHttpsUrl = value => {
+        if (!value) return "";
+        try {
+          const url = new URL(String(value));
+          if (url.protocol !== "https:") return "";
+          return url.href;
+        } catch {
+          return "";
+        }
+      };
 
-const channelOf = row => {
-  const m = row?.metadata || {};
-  const tag = String(first(row?.type, row?.kind, row?.category, m.type, m.kind, m.category, "")).toLowerCase();
+      const flattenRecord = raw => {
+        const row = raw && typeof raw === "object" ? raw : {};
+        const metadata = row.metadata && typeof row.metadata === "object"
+          ? row.metadata
+          : row.meta && typeof row.meta === "object"
+            ? row.meta
+            : {};
 
-  if (tag.includes("assembl")) return "assembly";
-  if (tag.includes("gene")) return "gene";
-  if (tag.includes("transcript") || tag.includes("rna")) return "transcript";
-  if (tag.includes("protein") || tag.includes("peptide")) return "protein";
-  if (tag === "cds" || tag.includes("coding sequence")) return "cds";
-  if (tag.includes("sequence") || tag.includes("nucleotide") || tag.includes("chromosome")) return "sequence";
+        const document = row.document && typeof row.document === "object"
+          ? row.document
+          : {};
 
-  const acc = accessionOf(row);
-  if (/^GC[AF]_\d+(?:\.\d+)?$/i.test(acc)) return "assembly";
-  if (/^(NP|XP|YP|WP|AP|P)_/i.test(acc)) return "protein";
-  if (/^(NM|NR|XM|XR)_/i.test(acc)) return "transcript";
-  if (/^(NC|NG|NT|NW|NZ|CP|CM)_/i.test(acc)) return "sequence";
-  if (m.gene_id || m.gene_symbol || m.symbol) return "gene";
+        const documentMetadata =
+          document.metadata && typeof document.metadata === "object"
+            ? document.metadata
+            : {};
 
-  return "other";
-};
+        const merged = { ...documentMetadata, ...metadata, ...document, ...row };
+        return { row, metadata, merged };
+      };
 
-function accessionOf(row){
-  const m = row?.metadata || {};
-  return String(first(
-    m.assembly_accession, m.accession, m.accession_version,
-    m.protein_accession, m.transcript_accession, m.sequence_accession,
-    row?.source_id, ""
-  )).trim();
-}
+      const recordType = raw => {
+        const { merged } = flattenRecord(raw);
+        const value = String(firstValue(
+          objectValue(merged, [
+            "type",
+            "kind",
+            "category",
+            "record_type",
+            "object_type",
+            "entity_type"
+          ]),
+          ""
+        )).toLowerCase();
 
-const ncbiURL = row => {
-  const m = row?.metadata || {};
-  const direct = first(row?.external_url, row?.url, m.external_url, m.ncbi_url, m.source_url, "");
+        if (value.includes("assembl")) return "assembly";
+        if (value.includes("gene")) return "gene";
+        if (value.includes("transcript") || value.includes("rna")) return "transcript";
+        if (value.includes("protein") || value.includes("peptide")) return "protein";
+        if (value.includes("sequence") || value.includes("nucleotide")) return "sequence";
 
-  if (direct) {
+        const accession = String(firstValue(
+          objectValue(merged, [
+            "assembly_accession",
+            "accession",
+            "accession_version",
+            "gene_accession",
+            "protein_accession",
+            "transcript_accession",
+            "sequence_accession",
+            "refseq_accession",
+            "identifier",
+            "id"
+          ]),
+          ""
+        )).trim();
+
+        if (
+          objectValue(merged, ["assembly_accession"]) ||
+          /^GC[AF]_\d+(?:\.\d+)?$/i.test(accession)
+        ) {
+          return "assembly";
+        }
+
+        if (
+          objectValue(merged, [
+            "gene_id",
+            "geneid",
+            "entrez_gene_id",
+            "entrez_id",
+            "gene_symbol"
+          ])
+        ) {
+          return "gene";
+        }
+
+        if (
+          objectValue(merged, ["protein_accession"]) ||
+          /^(NP|XP|YP|WP|AP|P)_/i.test(accession)
+        ) {
+          return "protein";
+        }
+
+        if (
+          objectValue(merged, ["transcript_accession"]) ||
+          /^(NM|NR|XM|XR)_/i.test(accession)
+        ) {
+          return "transcript";
+        }
+
+        if (
+          objectValue(merged, ["sequence_accession"]) ||
+          /^(NC|NG|NT|NW|NZ|CP|CM)_/i.test(accession)
+        ) {
+          return "sequence";
+        }
+
+        return "record";
+      };
+
+      const normalizedAccession = raw => {
+        const { merged } = flattenRecord(raw);
+        return String(firstValue(
+          objectValue(merged, [
+            "assembly_accession",
+            "accession",
+            "accession_version",
+            "gene_accession",
+            "protein_accession",
+            "transcript_accession",
+            "sequence_accession",
+            "refseq_accession",
+            "identifier",
+            "id"
+          ]),
+          ""
+        )).trim();
+      };
+
+      const ncbiUrlFor = raw => {
+        const { merged } = flattenRecord(raw);
+
+        const directCandidates = [
+          objectValue(merged, [
+            "ncbi_url",
+            "ncbiUrl",
+            "source_url",
+            "sourceUrl",
+            "record_url",
+            "recordUrl",
+            "url",
+            "href"
+          ])
+        ];
+
+        const links = merged.links;
+        if (Array.isArray(links)) {
+          for (const link of links) {
+            if (typeof link === "string") directCandidates.push(link);
+            if (link && typeof link === "object") {
+              directCandidates.push(link.url, link.href);
+            }
+          }
+        } else if (links && typeof links === "object") {
+          directCandidates.push(...Object.values(links));
+        }
+
+        for (const candidate of directCandidates.flat()) {
+          const safe = safeHttpsUrl(candidate);
+          if (safe && /(^|\.)ncbi\.nlm\.nih\.gov$/i.test(new URL(safe).hostname)) {
+            return safe;
+          }
+        }
+
+        const type = recordType(raw);
+        const accession = normalizedAccession(raw);
+        const geneId = String(firstValue(
+          objectValue(merged, ["gene_id", "geneid", "entrez_gene_id", "entrez_id"]),
+          type === "gene" && /^\d+$/.test(accession) ? accession : ""
+        )).trim();
+
+        const taxId = String(firstValue(
+          objectValue(merged, ["tax_id", "taxid", "taxonomy_id"]),
+          ""
+        )).trim();
+
+        const biosample = String(firstValue(
+          objectValue(merged, ["biosample", "biosample_accession"]),
+          ""
+        )).trim();
+
+        const bioproject = String(firstValue(
+          objectValue(merged, ["bioproject", "bioproject_accession"]),
+          ""
+        )).trim();
+
+        if (geneId && /^\d+$/.test(geneId)) {
+          return `https://www.ncbi.nlm.nih.gov/gene/${encodeURIComponent(geneId)}`;
+        }
+
+        if (/^GC[AF]_\d+(?:\.\d+)?$/i.test(accession)) {
+          return `https://www.ncbi.nlm.nih.gov/datasets/genome/${encodeURIComponent(accession)}/`;
+        }
+
+        if (biosample) {
+          return `https://www.ncbi.nlm.nih.gov/biosample/${encodeURIComponent(biosample)}`;
+        }
+
+        if (bioproject) {
+          return `https://www.ncbi.nlm.nih.gov/bioproject/${encodeURIComponent(bioproject)}`;
+        }
+
+        if (taxId && /^\d+$/.test(taxId)) {
+          return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${encodeURIComponent(taxId)}`;
+        }
+
+        if (accession) {
+          if (type === "protein" || /^(NP|XP|YP|WP|AP|P)_/i.test(accession)) {
+            return `https://www.ncbi.nlm.nih.gov/protein/${encodeURIComponent(accession)}`;
+          }
+
+          if (
+            type === "transcript" ||
+            type === "sequence" ||
+            /^(NM|NR|XM|XR|NC|NG|NT|NW|NZ|CP|CM)_/i.test(accession)
+          ) {
+            return `https://www.ncbi.nlm.nih.gov/nuccore/${encodeURIComponent(accession)}`;
+          }
+        }
+
+        const title = resultTitle(raw);
+        if (title) {
+          return `https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(title)}`;
+        }
+
+        return "";
+      };
+
+      const resultTitle = raw => {
+        const { merged } = flattenRecord(raw);
+        return String(firstValue(
+          objectValue(merged, [
+            "title",
+            "name",
+            "label",
+            "display_name",
+            "symbol",
+            "gene_symbol",
+            "organism_name",
+            "scientific_name",
+            "accession"
+          ]),
+          "Untitled genome record"
+        )).trim();
+      };
+
+      const resultDescription = raw => {
+        const { merged } = flattenRecord(raw);
+        const value = firstValue(
+          objectValue(merged, [
+            "description",
+            "summary",
+            "abstract",
+            "text",
+            "definition",
+            "annotation",
+            "product",
+            "function"
+          ]),
+          ""
+        );
+
+        const text = String(value).replace(/\s+/g, " ").trim();
+        return text.length > 520 ? `${text.slice(0, 517)}…` : text;
+      };
+
+      const resultScore = raw => {
+        const { merged } = flattenRecord(raw);
+        const value = Number(firstValue(
+          objectValue(merged, ["score", "resonance", "similarity"]),
+          NaN
+        ));
+
+        if (!Number.isFinite(value)) return "";
+        return value.toFixed(3);
+      };
+
+      const metadataPairs = raw => {
+        const { merged } = flattenRecord(raw);
+        const pairs = [];
+
+        const push = (label, value) => {
+          const text = String(value ?? "").trim();
+          if (!text) return;
+          if (pairs.some(item => item.value === text)) return;
+          pairs.push({ label, value: text });
+        };
+
+        push("type", recordType(raw));
+        push("accession", normalizedAccession(raw));
+        push("symbol", objectValue(merged, ["gene_symbol", "symbol"]));
+        push("organism", objectValue(merged, [
+          "organism_name",
+          "organism",
+          "scientific_name"
+        ]));
+        push("taxid", objectValue(merged, ["tax_id", "taxid", "taxonomy_id"]));
+        push("assembly", objectValue(merged, ["assembly_accession"]));
+        push("source", objectValue(merged, ["source", "provider", "database"]));
+
+        return pairs.slice(0, 6);
+      };
+
+      const copyText = async text => {
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          statusNode.textContent = `Copied · ${text}`;
+          statusNode.classList.remove("error");
+        } catch {
+          statusNode.textContent = "Copy failed";
+          statusNode.classList.add("error");
+        }
+      };
+
+      const updateFilterCounts = () => {
+        const counts = {
+          all: currentResults.length,
+          assembly: 0,
+          gene: 0,
+          transcript: 0,
+          protein: 0,
+          sequence: 0
+        };
+
+        for (const item of currentResults) {
+          const type = recordType(item);
+          if (Object.prototype.hasOwnProperty.call(counts, type)) {
+            counts[type] += 1;
+          }
+        }
+
+        for (const button of filters) {
+          const key = button.dataset.filter || "all";
+          const label = button.dataset.label || key;
+          const count = counts[key] ?? 0;
+          const countNode = button.querySelector(".filter-count");
+
+          if (countNode) {
+            countNode.textContent = count.toLocaleString();
+          }
+
+          button.setAttribute(
+            "aria-label",
+            `${label}: ${count.toLocaleString()} results`
+          );
+        }
+      };
+
+      const render = () => {
+        updateFilterCounts();
+
+        const visible = currentFilter === "all"
+          ? currentResults
+          : currentResults.filter(item => recordType(item) === currentFilter);
+
+        if (!visible.length) {
+          resultsNode.innerHTML = `
+            <div class="empty">
+              <strong>No records in this view.</strong>
+              <span>Change the filter or describe the biological relationship differently.</span>
+            </div>
+          `;
+          return;
+        }
+
+        resultsNode.innerHTML = visible.map((raw, index) => {
+          const title = resultTitle(raw);
+          const description = resultDescription(raw);
+          const score = resultScore(raw);
+          const accession = normalizedAccession(raw);
+          const ncbiUrl = ncbiUrlFor(raw);
+          const metadata = metadataPairs(raw)
+            .map(item => `<span>${escapeHtml(item.label)} · ${escapeHtml(item.value)}</span>`)
+            .join("");
+
+          const ncbiAction = ncbiUrl
+            ? `<a class="action primary" href="${escapeHtml(ncbiUrl)}" target="_blank" rel="noopener noreferrer">Open NCBI ↗</a>`
+            : "";
+
+          const copyAction = accession
+            ? `<button class="action copy-accession" type="button" data-accession="${escapeHtml(accession)}">Copy accession</button>`
+            : "";
+
+          return `
+            <article class="result">
+              <div class="rank">${String(index + 1).padStart(2, "0")}</div>
+              <div class="result-main">
+                <div class="result-topline">
+                  <h2 class="result-title">${escapeHtml(title)}</h2>
+                  ${score ? `<div class="score">resonance ${escapeHtml(score)}</div>` : ""}
+                </div>
+                ${metadata ? `<div class="metadata">${metadata}</div>` : ""}
+                ${description ? `<p class="description">${escapeHtml(description)}</p>` : ""}
+                ${(ncbiAction || copyAction) ? `<div class="actions">${ncbiAction}${copyAction}</div>` : ""}
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        resultsNode.querySelectorAll(".copy-accession").forEach(button => {
+          button.addEventListener("click", () => copyText(button.dataset.accession));
+        });
+      };
+
+      const setLoading = loading => {
+        loadingNode.hidden = !loading;
+        input.setAttribute("aria-busy", loading ? "true" : "false");
+      };
+
+      const search = async query => {
+        const q = String(query ?? "").trim();
+        if (!q) return;
+
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        setLoading(true);
+        statusNode.textContent = "Measuring query against the live field";
+        statusNode.classList.remove("error");
+
+        try {
+          const response = await fetch("/field/v1/search", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              text: q,
+              q,
+              k: 50
+            }),
+            signal: controller.signal
+          });
+
+          if (!response.ok) {
+            throw new Error(`Search returned HTTP ${response.status}`);
+          }
+
+          const payload = await response.json();
+          const rows = payload.results || payload.matches || payload.items || [];
+
+          if (!Array.isArray(rows)) {
+            throw new Error("Search response did not contain a result array");
+          }
+
+          currentResults = rows;
+          render();
+
+          const total = Number(payload.total || payload.count || rows.length);
+          statusNode.textContent =
+            `${Number.isFinite(total) ? total.toLocaleString() : rows.length} candidates · ` +
+            `${rows.length} ranked records returned · direct NCBI links restored`;
+        } catch (error) {
+          if (error && error.name === "AbortError") return;
+
+          currentResults = [];
+          updateFilterCounts();
+          resultsNode.innerHTML = `
+            <div class="empty">
+              <strong>The field did not return a result.</strong>
+              <span>${escapeHtml(error?.message || "Search failed")}</span>
+            </div>
+          `;
+          statusNode.textContent = error?.message || "Search failed";
+          statusNode.classList.add("error");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        search(input.value);
+      });
+
+      input.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        const q = input.value.trim();
+        if (q.length < 4) return;
+        debounceTimer = setTimeout(() => search(q), 320);
+      });
+
+      examples.forEach(button => {
+        button.addEventListener("click", () => {
+          input.value = button.textContent.trim();
+          search(input.value);
+        });
+      });
+
+      updateFilterCounts();
+
+      filters.forEach(button => {
+        button.addEventListener("click", () => {
+          currentFilter = button.dataset.filter || "all";
+          filters.forEach(item => {
+            item.setAttribute(
+              "aria-pressed",
+              item === button ? "true" : "false"
+            );
+          });
+          render();
+        });
+      });
+
+      fetch("/field/v1/manifest", {
+        headers: { "Accept": "application/json" }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(manifest => {
+          const count = Number(manifest.count || 0);
+          const dimensions = Number(
+            manifest.dimensions ||
+            manifest.dimension ||
+            manifest.dim ||
+            0
+          );
+
+          fieldStatNode.textContent =
+            `${count.toLocaleString()} objects · ${dimensions}D · live`;
+        })
+        .catch(() => {
+          fieldStatNode.textContent = "Live field connected";
+        });
+    })();
+  </script>
+
+<script id="creation-genome-build-progress-v3">
+(() => {
+  "use strict";
+
+  const node = document.getElementById("fieldStat");
+
+  if (!node) return;
+
+  const refresh = async () => {
     try {
-      const u = new URL(String(direct));
-      if (u.protocol === "https:" && /(^|\.)ncbi\.nlm\.nih\.gov$/i.test(u.hostname)) return u.href;
-    } catch {}
-  }
+      const response = await fetch(
+        `/field/v1/manifest?progress=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
 
-  const ch = channelOf(row);
-  const acc = accessionOf(row);
-  const gid = String(first(m.gene_id, m.geneid, m.entrez_gene_id, m.entrez_id, "")).trim();
-
-  if (gid && /^\d+$/.test(gid)) return `https://www.ncbi.nlm.nih.gov/gene/${encodeURIComponent(gid)}`;
-  if (/^GC[AF]_\d+(?:\.\d+)?$/i.test(acc)) return `https://www.ncbi.nlm.nih.gov/datasets/genome/${encodeURIComponent(acc)}/`;
-  if (ch === "protein" && acc) return `https://www.ncbi.nlm.nih.gov/protein/${encodeURIComponent(acc)}`;
-  if (["transcript","sequence","cds"].includes(ch) && acc) return `https://www.ncbi.nlm.nih.gov/nuccore/${encodeURIComponent(acc)}`;
-
-  const term = first(row?.title, acc, row?.source_id, "genome");
-  return `https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(term)}`;
-};
-
-const resonanceOf = row => Number(row?.resonance ?? row?.score ?? row?.similarity);
-const colorFor = key => CHANNELS.find(c => c.key === key)?.color || "var(--ch-other)";
-
-/* ── channel bar ────────────────────────────────────────── */
-channelBar.innerHTML = CHANNELS.map(c => `
-  <button class="chan" type="button" data-key="${c.key}" style="--c:${c.color}"
-          aria-pressed="${c.key === "" ? "true" : "false"}">
-    <span class="chan-dot" aria-hidden="true"></span>
-    <span>${c.label}</span>
-    <span class="chan-n">0</span>
-  </button>
-`).join("");
-
-const chanButtons = [...channelBar.querySelectorAll(".chan")];
-
-chanButtons.forEach(btn => btn.addEventListener("click", () => {
-  activeChannel = btn.dataset.key;
-  render();
-  btn.scrollIntoView({ block:"nearest", inline:"center", behavior:"smooth" });
-}));
-
-const tallyChannels = () => {
-  const counts = { "":rows.length };
-  for (const row of rows) {
-    const k = channelOf(row);
-    counts[k] = (counts[k] || 0) + 1;
-  }
-  for (const btn of chanButtons) {
-    const k = btn.dataset.key;
-    const n = counts[k] || 0;
-    btn.querySelector(".chan-n").textContent = n.toLocaleString();
-    btn.setAttribute("aria-pressed", k === activeChannel ? "true" : "false");
-    btn.disabled = k !== "" && n === 0;
-    btn.setAttribute("aria-label", `${btn.textContent.trim().replace(/\s+/g," ")} — ${n} objects`);
-  }
-};
-
-/* ── trace ──────────────────────────────────────────────── */
-const paintTrace = shown => {
-  if (!shown.length) { trace.hidden = true; trace.innerHTML = ""; return; }
-
-  const vals = shown.map(resonanceOf).filter(Number.isFinite);
-  const hi = vals.length ? Math.max(...vals) : 1;
-  const lo = vals.length ? Math.min(...vals) : 0;
-  const span = hi - lo || 1;
-
-  trace.hidden = false;
-  trace.innerHTML = shown.map((row, i) => {
-    const v = resonanceOf(row);
-    const h = Number.isFinite(v) ? 16 + ((v - lo) / span) * 84 : 16;
-    const ch = channelOf(row);
-    return `<button class="tick" type="button" tabindex="-1" aria-hidden="true" data-i="${i}"
-      style="height:${h.toFixed(1)}%;--c:${colorFor(ch)};animation-delay:${Math.min(i*8,420)}ms"></button>`;
-  }).join("");
-
-  trace.querySelectorAll(".tick").forEach(tick => {
-    tick.addEventListener("click", () => {
-      const card = document.getElementById(`r${tick.dataset.i}`);
-      if (!card) return;
-      card.scrollIntoView({ behavior:"smooth", block:"center" });
-      document.querySelectorAll(".record.lit").forEach(n => n.classList.remove("lit"));
-      card.classList.add("lit");
-      trace.querySelectorAll(".tick.lit").forEach(n => n.classList.remove("lit"));
-      tick.classList.add("lit");
-    });
-  });
-};
-
-/* ── render ─────────────────────────────────────────────── */
-const render = () => {
-  const shown = activeChannel ? rows.filter(r => channelOf(r) === activeChannel) : rows;
-
-  tallyChannels();
-  readout.classList.remove("fault");
-
-  state.innerHTML = `<b>${shown.length.toLocaleString()}</b> OBJECTS · ${activeChannel ? activeChannel.toUpperCase() : "ALL CHANNELS"}`;
-  clock.textContent = elapsedMs ? `${Math.round(elapsedMs)} MS` : "";
-
-  paintTrace(shown);
-
-  if (!shown.length) {
-    list.innerHTML = `<div class="void"><b>Nothing resolved for that.</b>
-      Widen the phrasing, drop a constraint, or switch back to all channels.</div>`;
-    return;
-  }
-
-  const hi = Math.max(...shown.map(resonanceOf).filter(Number.isFinite), 0) || 1;
-
-  list.innerHTML = shown.map((row, i) => {
-    const m = row.metadata || {};
-    const ch = channelOf(row);
-    const acc = accessionOf(row);
-    const v = resonanceOf(row);
-    const vText = Number.isFinite(v) ? v.toFixed(4) : "—";
-    const width = Number.isFinite(v) ? Math.max(2, (v / hi) * 100) : 0;
-    const rank = String(Number(row.rank || i + 1)).padStart(2, "0");
-    const organism = first(m.organism, m.organism_name, "");
-    const assembly = first(m.assembly_accession, "");
-    const taxon = first(m.tax_id, m.taxid, "");
-
-    return `
-      <article class="record" id="r${i}" style="--c:${colorFor(ch)}">
-        <div class="stamp">
-          <span class="rank">${rank}</span>
-          <span>${esc(ch.toUpperCase())}</span>
-          ${organism ? `<span class="org">· ${esc(organism)}</span>` : ""}
-        </div>
-
-        <h3 class="name">${esc(first(row.title, row.name, row.label, acc, "Untitled object"))}</h3>
-        ${has(first(row.overview, row.description, row.summary, ""))
-          ? `<p class="gist">${esc(first(row.overview, row.description, row.summary, ""))}</p>` : ""}
-
-        <div class="resonance">
-          <span class="v">${vText}</span>
-          <span class="l">RESONANCE</span>
-        </div>
-        <div class="gauge"><i style="width:${width.toFixed(1)}%"></i></div>
-
-        <div class="ids">
-          ${acc ? `<b>ACCESSION</b> ${esc(acc)}<br>` : ""}
-          ${assembly ? `<b>ASSEMBLY</b> ${esc(assembly)}<br>` : ""}
-          ${taxon ? `<b>TAXON</b> ${esc(taxon)}` : ""}
-        </div>
-
-        <div class="acts">
-          <a class="act primary" href="${esc(ncbiURL(row))}" target="_blank" rel="noopener noreferrer">OPEN IN NCBI ↗</a>
-          ${acc ? `<button class="act" type="button" data-copy="${esc(acc)}">COPY ACCESSION</button>` : ""}
-        </div>
-      </article>
-    `;
-  }).join("");
-
-  list.querySelectorAll("[data-copy]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const value = btn.dataset.copy;
-      try {
-        await navigator.clipboard.writeText(value);
-        btn.textContent = `COPIED ${value}`;
-      } catch {
-        btn.textContent = "COPY BLOCKED — SELECT MANUALLY";
+      if (!response.ok) {
+        throw new Error(
+          `manifest HTTP ${response.status}`
+        );
       }
-      setTimeout(() => { btn.textContent = "COPY ACCESSION"; }, 1800);
-    });
-  });
-};
 
-const fault = message => {
-  rows = [];
-  elapsedMs = 0;
-  tallyChannels();
-  trace.hidden = true;
-  readout.classList.add("fault");
-  state.textContent = "FIELD UNREACHABLE";
-  clock.textContent = "";
-  list.innerHTML = `<div class="void fault"><b>${esc(message)}</b>
-    The field did not answer. Measure again, or check that the ARBITER service is up.</div>`;
-};
+      const manifest = await response.json();
 
-/* ── field calls ────────────────────────────────────────── */
-async function manifest(){
-  const res = await fetch(MANIFEST_URL, { cache:"no-store" });
-  if (!res.ok) throw new Error(`Manifest returned HTTP ${res.status}`);
+      const live = Number(
+        manifest.live_count ||
+        manifest.count ||
+        0
+      );
 
-  const data = await res.json();
-  const objects = Number(first(data.count, data.live_count, data.indexed_count, 0));
-  const assemblies = Number(first(data.assemblies, data.assembly_count, 0));
-  const dims = Number(first(data.dimensions, data.dimension, data.dim, 72));
+      const indexed = Number(
+        manifest.indexed_count ||
+        manifest.embedded_count ||
+        live
+      );
 
-  tally.textContent = assemblies
-    ? `${objects.toLocaleString()} OBJ · ${assemblies.toLocaleString()} ASM`
-    : `${objects.toLocaleString()} OBJ · ${dims}D`;
-}
+      const dimensions = Number(
+        manifest.dimensions ||
+        manifest.dimension ||
+        manifest.dim ||
+        72
+      );
 
-async function search(){
-  const text = qInput.value.trim();
-  if (!text) return;
+      const active = Boolean(
+        manifest.build_active
+      );
 
-  if (controller) controller.abort();
-  controller = new AbortController();
+      node.textContent =
+        `${indexed.toLocaleString("en-US")} objects · ` +
+        `${dimensions}D · ` +
+        `${active ? "indexing" : "live"}`;
+    } catch (error) {
+      console.warn(
+        "GENOME progress unavailable",
+        error
+      );
+    }
+  };
 
-  readout.classList.remove("fault");
-  state.textContent = "RESOLVING";
-  clock.textContent = "";
-  scan.hidden = false;
-
-  try {
-    const res = await fetch(SEARCH_URL, {
-      method:"POST",
-      headers:{ "content-type":"application/json" },
-      body: JSON.stringify({ text, q:text, k:100, types:[] }),
-      signal: controller.signal
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `Search returned HTTP ${res.status}`);
-
-    rows = Array.isArray(data.results) ? data.results
-         : Array.isArray(data.matches) ? data.matches
-         : Array.isArray(data.items) ? data.items
-         : [];
-
-    elapsedMs = Number(data.elapsed_ms || data.elapsed || 0);
-    render();
-  } catch (err) {
-    if (err?.name === "AbortError") return;
-    fault(err?.message || "Search failed");
-  } finally {
-    scan.hidden = true;
-  }
-}
-
-/* ── wiring ─────────────────────────────────────────────── */
-el("form").addEventListener("submit", e => {
-  e.preventDefault();
-  qInput.blur();
-  search();
-});
-
-qInput.addEventListener("input", () => {
-  clearTimeout(debounce);
-  debounce = setTimeout(search, 420);
-});
-
-qInput.addEventListener("focus", () => qInput.select(), { once:true });
-
-document.querySelectorAll(".starter").forEach(btn => {
-  btn.addEventListener("click", () => {
-    qInput.value = btn.textContent.trim();
-    activeChannel = "";
-    search();
-    window.scrollTo({ top:0, behavior:"smooth" });
-  });
-});
-
-manifest().catch(() => { tally.textContent = "FIELD OFFLINE"; });
-search();
+  refresh();
+  window.setInterval(refresh, 5000);
+})();
 </script>
+
 </body>
 </html>

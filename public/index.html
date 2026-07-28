@@ -1506,22 +1506,6 @@
       }
     }
   </style>
-
-<script id="creation-api-base-v1">
-  window.CREATION_API_BASE =
-    "https://genome.shares.zrok.io";
-
-  window.CREATION_API = path => {
-    const base = String(
-      window.CREATION_API_BASE || ""
-    ).replace(/\/+$/, "");
-
-    return /^https?:\/\//i.test(path)
-      ? path
-      : base + path;
-  };
-</script>
-
 </head>
 <body>
   <main class="shell">
@@ -2662,7 +2646,7 @@
         setPipelineStage("target_map", "running", "Mapping");
 
         try {
-          const response = await fetch(window.CREATION_API("/field/v1/intervention/design"), {
+          const response = await fetch("/field/v1/intervention/design", {
             method: "POST",
             headers: {
               "Accept": "application/json",
@@ -2900,7 +2884,7 @@
         requestedCount,
         signal
       ) => {
-        const response = await fetch(window.CREATION_API("/field/v1/search"), {
+        const response = await fetch("/field/v1/search", {
           method: "POST",
           headers: {
             "Accept": "application/json",
@@ -3326,7 +3310,7 @@
         });
       });
 
-      fetch(window.CREATION_API("/field/v1/manifest"), {
+      fetch("/field/v1/manifest", {
         headers: { "Accept": "application/json" }
       })
         .then(response => {

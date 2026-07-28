@@ -71,7 +71,13 @@ async function proxy(req, res) {
     for (const [key, value] of Object.entries(req.headers)) {
       if (
         value !== undefined &&
-        !["host", "content-length", "connection"].includes(
+        ![
+          "host",
+          "content-length",
+          "connection",
+          "user-agent",
+          "accept-encoding"
+        ].includes(
           key.toLowerCase()
         )
       ) {
@@ -80,6 +86,12 @@ async function proxy(req, res) {
     }
 
     headers.set("accept", "application/json");
+
+    // zrok's free tier serves an HTML interstitial to anything that looks
+    // like a browser. Forwarding Chrome's user-agent made every browser
+    // request return that page instead of JSON.
+    headers.set("user-agent", "CREATION-proxy/1.0");
+    headers.set("skip_zrok_interstitial", "1");
 
     if (backendToken) {
       headers.set("authorization", `Bearer ${backendToken}`);

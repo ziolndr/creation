@@ -3347,7 +3347,7 @@
   const refresh = async () => {
     try {
       const response = await fetch(
-        `/field/v1/manifest?progress=${Date.now()}`,
+        "/field/v1/manifest",
         {
           cache: "no-store",
           headers: {
@@ -3384,7 +3384,11 @@
       );
 
       const active = Boolean(
-        manifest.build_active
+        manifest.build_active ||
+        (
+          manifest.partial &&
+          !manifest.build_complete
+        )
       );
 
       node.textContent =

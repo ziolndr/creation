@@ -1,7 +1,9 @@
+import { handleInterventionRoute } from "./intervention-node.mjs";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import interventionDesignHandler from "./api/intervention/design.js";
 
 const root = fileURLToPath(new URL("./public/", import.meta.url));
 const port = Number(process.env.PORT || 10000);
@@ -51,6 +53,69 @@ async function readBody(req) {
   }
 
   return chunks.length ? Buffer.concat(chunks) : undefined;
+}
+
+
+async function handleInterventionDesign(req, res) {
+  let body = {};
+
+  try {
+    const raw = await readBody(req);
+
+    if (raw?.length) {
+      body = JSON.parse(raw.toString("utf8"));
+    }
+  } catch {
+    json(res, 400, {
+      error: "invalid JSON request body"
+    });
+    return;
+  }
+
+  const request = {
+    method: req.method || "GET",
+    headers: req.headers,
+    body
+  };
+
+  const response = {
+    status(code) {
+      res.statusCode = Number(code);
+      return response;
+    },
+
+    setHeader(name, value) {
+      res.setHeader(name, value);
+      return response;
+    },
+
+    end(payload = "") {
+      if (!res.writableEnded) {
+        res.end(payload);
+      }
+
+      return response;
+    }
+  };
+
+  try {
+    await interventionDesignHandler(
+      request,
+      response
+    );
+  } catch (error) {
+    if (!res.headersSent) {
+      json(res, 500, {
+        error: "intervention handler failed",
+        detail: String(error?.message || error)
+      });
+      return;
+    }
+
+    if (!res.writableEnded) {
+      res.end();
+    }
+  }
 }
 
 async function proxy(req, res) {
@@ -202,6 +267,21 @@ async function serveStatic(req, res) {
 }
 
 const server = createServer(async (req, res) => {
+  // BEGIN CREATION CLEAN INTERVENTION ROUTE
+  const creationPathname = new URL(
+    req.url || "/",
+    "http://127.0.0.1"
+  ).pathname.replace(/\/+$/, "");
+
+  if (
+    creationPathname ===
+    "/field/v1/intervention/design"
+  ) {
+    await handleInterventionRoute(req, res);
+    return;
+  }
+  // END CREATION CLEAN INTERVENTION ROUTE
+
   if (req.url === "/health") {
     json(res, 200, {
       ok: true,
@@ -211,7 +291,19 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.url?.startsWith("/field/")) {
+  const pathname = new URL(
+    req.url || "/",
+    "http://localhost"
+  ).pathname.replace(/\/+$/, "");
+
+  if (
+    pathname === "/field/v1/intervention/design"
+  ) {
+    await handleInterventionDesign(req, res);
+    return;
+  }
+
+  if (pathname.startsWith("/field/")) {
     await proxy(req, res);
     return;
   }

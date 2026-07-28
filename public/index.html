@@ -2650,7 +2650,8 @@
             method: "POST",
             headers: {
               "Accept": "application/json",
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "skip_zrok_interstitial": "1"
             },
             body: JSON.stringify(request)
           });
@@ -2888,7 +2889,8 @@
           method: "POST",
           headers: {
             "Accept": "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "skip_zrok_interstitial": "1"
           },
           body: JSON.stringify({
             text: query,
@@ -3311,7 +3313,10 @@
       });
 
       fetch("/field/v1/manifest", {
-        headers: { "Accept": "application/json" }
+        headers: {
+          "Accept": "application/json",
+          "skip_zrok_interstitial": "1"
+        }
       })
         .then(response => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`);

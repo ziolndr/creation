@@ -28,6 +28,7 @@ const fetchJson = async (url, options = {}, timeoutMs = 18000) => {
       headers: {
         Accept: "application/json",
         "User-Agent": "CREATION/1.0 intervention-design",
+        "skip_zrok_interstitial": "1",
         ...(options.headers || {})
       }
     });
@@ -367,19 +368,86 @@ const bestCombination = (candidates, requestedTargets, maxSize = 3) => {
   };
 };
 
-const proxyWorker = async (workerUrl, body) => {
-  const url = `${workerUrl.replace(/\/+$/, "")}/v1/design`;
+const waitForEnrichJob = milliseconds =>
+  new Promise(resolve =>
+    setTimeout(resolve, milliseconds)
+  );
 
-  return fetchJson(
-    url,
+// BEGIN CREATION ASYNC WORKER CLIENT V1
+const proxyWorker = async (workerUrl, body) => {
+  const root = workerUrl.replace(/\/+$/, "");
+  const base = await localKnownChemistry(body);
+
+  const submitted = await fetchJson(
+    `${root}/v1/enrich/jobs`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        request: body,
+        base
+      })
     },
-    110000
+    30000
+  );
+
+  const jobId = String(
+    submitted?.job_id || ""
+  ).trim();
+
+  if (!jobId) {
+    throw new Error(
+      "CREATION worker did not return a job_id"
+    );
+  }
+
+  const deadline =
+    Date.now() + 30 * 60 * 1000;
+
+  while (Date.now() < deadline) {
+    const job = await fetchJson(
+      `${root}/v1/enrich/jobs/${encodeURIComponent(jobId)}`,
+      {},
+      30000
+    );
+
+    const status = String(
+      job?.status || ""
+    ).toLowerCase();
+
+    if (status === "complete") {
+      if (
+        !job.result ||
+        typeof job.result !== "object"
+      ) {
+        throw new Error(
+          `CREATION worker job ${jobId} completed without a result`
+        );
+      }
+
+      return job.result;
+    }
+
+    if (status === "failed") {
+      const detail =
+        job?.error?.exception ||
+        job?.error?.error ||
+        job?.detail ||
+        `CREATION worker job ${jobId} failed`;
+
+      throw new Error(String(detail));
+    }
+
+    await waitForEnrichJob(2000);
+  }
+
+  throw new Error(
+    `CREATION worker job ${jobId} exceeded 30 minutes`
   );
 };
+// END CREATION ASYNC WORKER CLIENT V1
 
 const localKnownChemistry = async body => {
   const targets = normalizeTargets(body);
@@ -497,7 +565,7 @@ export default async function handler(request, response) {
 
   try {
     const workerUrl = String(
-      process.env.CREATION_CHEMISTRY_URL || ""
+      process.env.CREATION_CHEMISTRY_URL || "https://creation-chemistry.shares.zrok.io"
     ).trim();
 
     const result = workerUrl

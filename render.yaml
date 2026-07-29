@@ -13,5 +13,7 @@ services:
         sync: false
       - key: CREATION_BACKEND_TOKEN
         sync: false
+      - key: CREATION_CHEMISTRY_URL
+        value: "https://creation-chemistry.shares.zrok.io"
       - key: CREATION_PROXY_TIMEOUT_MS
         value: "120000"

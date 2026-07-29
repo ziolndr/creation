@@ -2018,25 +2018,95 @@
         }
       };
 
+      // CREATION_NCBI_RECORD_LINKS_V3
+      const parseRecordObject = value => {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          return value;
+        }
+
+        if (typeof value !== "string") return {};
+
+        const text = value.trim();
+        if (!text || (text[0] !== "{" && text[0] !== "[")) return {};
+
+        try {
+          const parsed = JSON.parse(text);
+          return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? parsed
+            : {};
+        } catch {
+          return {};
+        }
+      };
+
       const flattenRecord = raw => {
-        const row = raw && typeof raw === "object" ? raw : {};
-        const metadata = row.metadata && typeof row.metadata === "object"
-          ? row.metadata
-          : row.meta && typeof row.meta === "object"
-            ? row.meta
-            : {};
+        const row = parseRecordObject(raw);
+        const metadata = Object.keys(parseRecordObject(row.metadata)).length
+          ? parseRecordObject(row.metadata)
+          : Object.keys(parseRecordObject(row.metadata_json)).length
+            ? parseRecordObject(row.metadata_json)
+            : parseRecordObject(row.meta);
 
-        const document = row.document && typeof row.document === "object"
-          ? row.document
-          : {};
-
+        const document = parseRecordObject(row.document);
         const documentMetadata =
-          document.metadata && typeof document.metadata === "object"
-            ? document.metadata
-            : {};
+          Object.keys(parseRecordObject(document.metadata)).length
+            ? parseRecordObject(document.metadata)
+            : parseRecordObject(document.metadata_json);
 
         const merged = { ...documentMetadata, ...metadata, ...document, ...row };
         return { row, metadata, merged };
+      };
+
+      const sourceIdFor = raw => {
+        const { merged } = flattenRecord(raw);
+        return String(firstValue(
+          objectValue(merged, [
+            "source_id",
+            "sourceId",
+            "object_id",
+            "objectId",
+            "record_id",
+            "recordId"
+          ]),
+          ""
+        )).trim();
+      };
+
+      const cleanAccession = value => {
+        let text = String(value ?? "").trim();
+        if (!text) return "";
+
+        text = text
+          .replace(/^(?:protein|rna|mrna|transcript|cds|gene|sequence)-/i, "")
+          .replace(/^id-/i, "")
+          .trim();
+
+        const match = text.match(
+          /(?:GC[AF]_\d+(?:\.\d+)?|[A-Z]{1,4}_\d+(?:\.\d+)?|\d+)$/i
+        );
+
+        return match ? match[0] : text;
+      };
+
+      const sourceTailFor = raw => {
+        const sourceId = sourceIdFor(raw);
+        if (!sourceId) return "";
+        return cleanAccession(sourceId.split(":").pop() || "");
+      };
+
+      const declaredRecordType = raw => {
+        const { merged } = flattenRecord(raw);
+        return String(firstValue(
+          objectValue(merged, [
+            "type",
+            "kind",
+            "category",
+            "record_type",
+            "object_type",
+            "entity_type"
+          ]),
+          ""
+        )).toLowerCase();
       };
 
       const recordType = raw => {
@@ -2120,28 +2190,234 @@
 
       const normalizedAccession = raw => {
         const { merged } = flattenRecord(raw);
-        return String(firstValue(
-          objectValue(merged, [
-            "assembly_accession",
-            "accession",
-            "accession_version",
-            "gene_accession",
+        const declared = declaredRecordType(raw);
+
+        const candidates = [];
+
+        if (declared.includes("protein") || declared.includes("cds")) {
+          candidates.push(objectValue(merged, [
+            "protein_id",
             "protein_accession",
+            "protein_accession_version",
+            "refseq_protein_accession"
+          ]));
+        }
+
+        if (
+          declared.includes("transcript") ||
+          declared.includes("rna")
+        ) {
+          candidates.push(objectValue(merged, [
+            "transcript_id",
             "transcript_accession",
+            "transcript_accession_version",
+            "refseq_transcript_accession"
+          ]));
+        }
+
+        if (declared.includes("gene")) {
+          candidates.push(objectValue(merged, [
+            "gene_id",
+            "geneid",
+            "entrez_gene_id",
+            "entrez_id",
+            "gene_accession"
+          ]));
+        }
+
+        if (
+          declared.includes("sequence") ||
+          declared.includes("nucleotide")
+        ) {
+          candidates.push(objectValue(merged, [
             "sequence_accession",
             "refseq_accession",
-            "identifier",
-            "id"
+            "genbank_accession"
+          ]));
+        }
+
+        if (declared.includes("assembl")) {
+          candidates.push(objectValue(merged, ["assembly_accession"]));
+        }
+
+        candidates.push(
+          objectValue(merged, [
+            "protein_id",
+            "protein_accession",
+            "transcript_id",
+            "transcript_accession",
+            "gene_id",
+            "sequence_accession",
+            "refseq_accession",
+            "genbank_accession",
+            "accession",
+            "accession_version",
+            "identifier"
           ]),
-          ""
-        )).trim();
+          sourceTailFor(raw),
+          objectValue(merged, ["assembly_accession"])
+        );
+
+        for (const candidate of candidates.flat()) {
+          const value = cleanAccession(candidate);
+          if (value) return value;
+        }
+
+        return "";
+      };
+
+      const assemblyAccessionFor = raw => {
+        const { merged } = flattenRecord(raw);
+        const direct = cleanAccession(
+          objectValue(merged, ["assembly_accession"])
+        );
+
+        if (/^GC[AF]_\d+(?:\.\d+)?$/i.test(direct)) return direct;
+
+        const sourceId = sourceIdFor(raw);
+        const match = sourceId.match(/(?:^|:)(GC[AF]_\d+(?:\.\d+)?)(?::|$)/i);
+        return match ? match[1] : "";
+      };
+
+      const coordinateUrl = (accession, start, end) => {
+        const clean = cleanAccession(accession);
+        if (!clean) return "";
+
+        const url = new URL(
+          `https://www.ncbi.nlm.nih.gov/nuccore/${encodeURIComponent(clean)}`
+        );
+
+        const from = Number(start);
+        const to = Number(end);
+
+        if (
+          Number.isInteger(from) &&
+          Number.isInteger(to) &&
+          from > 0 &&
+          to >= from
+        ) {
+          url.searchParams.set("from", String(from));
+          url.searchParams.set("to", String(to));
+        }
+
+        return url.href;
       };
 
       const ncbiUrlFor = raw => {
         const { merged } = flattenRecord(raw);
+        const type = recordType(raw);
+        const declared = declaredRecordType(raw);
+        const accession = normalizedAccession(raw);
+        const assembly = assemblyAccessionFor(raw);
+
+        const proteinId = cleanAccession(firstValue(
+          objectValue(merged, [
+            "protein_id",
+            "protein_accession",
+            "protein_accession_version",
+            "refseq_protein_accession"
+          ]),
+          (
+            type === "protein" ||
+            declared.includes("protein") ||
+            declared.includes("cds")
+          )
+            ? sourceTailFor(raw)
+            : ""
+        ));
+
+        const transcriptId = cleanAccession(firstValue(
+          objectValue(merged, [
+            "transcript_id",
+            "transcript_accession",
+            "transcript_accession_version",
+            "refseq_transcript_accession"
+          ]),
+          (
+            type === "transcript" ||
+            declared.includes("transcript") ||
+            declared.includes("rna")
+          )
+            ? sourceTailFor(raw)
+            : ""
+        ));
+
+        const geneId = cleanAccession(firstValue(
+          objectValue(merged, [
+            "gene_id",
+            "geneid",
+            "entrez_gene_id",
+            "entrez_id"
+          ]),
+          ""
+        ));
+
+        const sequenceAccession = cleanAccession(firstValue(
+          objectValue(merged, [
+            "sequence_accession",
+            "refseq_accession",
+            "genbank_accession"
+          ]),
+          (
+            type === "sequence" ||
+            declared.includes("sequence") ||
+            declared.includes("nucleotide")
+          )
+            ? sourceTailFor(raw)
+            : ""
+        ));
+
+        const start = objectValue(merged, ["start", "start_position"]);
+        const end = objectValue(merged, ["end", "end_position"]);
+
+        if (
+          proteinId &&
+          (
+            type === "protein" ||
+            declared.includes("protein") ||
+            declared.includes("cds")
+          )
+        ) {
+          return `https://www.ncbi.nlm.nih.gov/protein/${encodeURIComponent(proteinId)}`;
+        }
+
+        if (geneId && /^\d+$/.test(geneId)) {
+          return `https://www.ncbi.nlm.nih.gov/gene/${encodeURIComponent(geneId)}`;
+        }
+
+        if (
+          transcriptId &&
+          /^(NM|NR|XM|XR)_\d+(?:\.\d+)?$/i.test(transcriptId)
+        ) {
+          return `https://www.ncbi.nlm.nih.gov/nuccore/${encodeURIComponent(transcriptId)}`;
+        }
+
+        if (sequenceAccession) {
+          return coordinateUrl(sequenceAccession, start, end);
+        }
+
+        if (
+          accession &&
+          /^(NP|XP|YP|WP|AP|P)_\d+(?:\.\d+)?$/i.test(accession)
+        ) {
+          return `https://www.ncbi.nlm.nih.gov/protein/${encodeURIComponent(accession)}`;
+        }
+
+        if (
+          accession &&
+          /^(NM|NR|XM|XR|NC|NG|NT|NW|NZ|CP|CM)_\d+(?:\.\d+)?$/i.test(accession)
+        ) {
+          return coordinateUrl(accession, start, end);
+        }
+
+        if (assembly) {
+          return `https://www.ncbi.nlm.nih.gov/datasets/genome/${encodeURIComponent(assembly)}/`;
+        }
 
         const directCandidates = [
           objectValue(merged, [
+            "external_url",
+            "externalUrl",
             "ncbi_url",
             "ncbiUrl",
             "source_url",
@@ -2153,84 +2429,27 @@
           ])
         ];
 
-        const links = merged.links;
-        if (Array.isArray(links)) {
-          for (const link of links) {
+        const links = parseRecordObject(merged.links);
+        if (Array.isArray(merged.links)) {
+          for (const link of merged.links) {
             if (typeof link === "string") directCandidates.push(link);
             if (link && typeof link === "object") {
               directCandidates.push(link.url, link.href);
             }
           }
-        } else if (links && typeof links === "object") {
+        } else if (Object.keys(links).length) {
           directCandidates.push(...Object.values(links));
         }
 
         for (const candidate of directCandidates.flat()) {
           const safe = safeHttpsUrl(candidate);
-          if (safe && /(^|\.)ncbi\.nlm\.nih\.gov$/i.test(new URL(safe).hostname)) {
-            return safe;
-          }
-        }
+          if (!safe) continue;
 
-        const type = recordType(raw);
-        const accession = normalizedAccession(raw);
-        const geneId = String(firstValue(
-          objectValue(merged, ["gene_id", "geneid", "entrez_gene_id", "entrez_id"]),
-          type === "gene" && /^\d+$/.test(accession) ? accession : ""
-        )).trim();
+          const parsed = new URL(safe);
+          if (!/(^|\.)ncbi\.nlm\.nih\.gov$/i.test(parsed.hostname)) continue;
+          if (/^\/search\/all\/?$/i.test(parsed.pathname)) continue;
 
-        const taxId = String(firstValue(
-          objectValue(merged, ["tax_id", "taxid", "taxonomy_id"]),
-          ""
-        )).trim();
-
-        const biosample = String(firstValue(
-          objectValue(merged, ["biosample", "biosample_accession"]),
-          ""
-        )).trim();
-
-        const bioproject = String(firstValue(
-          objectValue(merged, ["bioproject", "bioproject_accession"]),
-          ""
-        )).trim();
-
-        if (geneId && /^\d+$/.test(geneId)) {
-          return `https://www.ncbi.nlm.nih.gov/gene/${encodeURIComponent(geneId)}`;
-        }
-
-        if (/^GC[AF]_\d+(?:\.\d+)?$/i.test(accession)) {
-          return `https://www.ncbi.nlm.nih.gov/datasets/genome/${encodeURIComponent(accession)}/`;
-        }
-
-        if (biosample) {
-          return `https://www.ncbi.nlm.nih.gov/biosample/${encodeURIComponent(biosample)}`;
-        }
-
-        if (bioproject) {
-          return `https://www.ncbi.nlm.nih.gov/bioproject/${encodeURIComponent(bioproject)}`;
-        }
-
-        if (taxId && /^\d+$/.test(taxId)) {
-          return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${encodeURIComponent(taxId)}`;
-        }
-
-        if (accession) {
-          if (type === "protein" || /^(NP|XP|YP|WP|AP|P)_/i.test(accession)) {
-            return `https://www.ncbi.nlm.nih.gov/protein/${encodeURIComponent(accession)}`;
-          }
-
-          if (
-            type === "transcript" ||
-            type === "sequence" ||
-            /^(NM|NR|XM|XR|NC|NG|NT|NW|NZ|CP|CM)_/i.test(accession)
-          ) {
-            return `https://www.ncbi.nlm.nih.gov/nuccore/${encodeURIComponent(accession)}`;
-          }
-        }
-
-        const title = resultTitle(raw);
-        if (title) {
-          return `https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(title)}`;
+          return safe;
         }
 
         return "";
@@ -2292,23 +2511,23 @@
         const push = (label, value) => {
           const text = String(value ?? "").trim();
           if (!text) return;
-          if (pairs.some(item => item.value === text)) return;
+          if (pairs.some(item => item.label === label && item.value === text)) return;
           pairs.push({ label, value: text });
         };
 
         push("type", recordType(raw));
         push("accession", normalizedAccession(raw));
-        push("symbol", objectValue(merged, ["gene_symbol", "symbol"]));
         push("organism", objectValue(merged, [
           "organism_name",
           "organism",
           "scientific_name"
         ]));
-        push("taxid", objectValue(merged, ["tax_id", "taxid", "taxonomy_id"]));
-        push("assembly", objectValue(merged, ["assembly_accession"]));
+        push("assembly", assemblyAccessionFor(raw));
+        push("record", sourceIdFor(raw));
+        push("symbol", objectValue(merged, ["gene_symbol", "symbol", "gene"]));
         push("source", objectValue(merged, ["source", "provider", "database"]));
 
-        return pairs.slice(0, 6);
+        return pairs.slice(0, 7);
       };
 
       const isAssemblyAccession = value =>
@@ -2993,7 +3212,7 @@
             : "";
 
           const ncbiAction = ncbiUrl
-            ? `<a class="action primary" href="${escapeHtml(ncbiUrl)}" target="_blank" rel="noopener noreferrer">Open NCBI ↗</a>`
+            ? `<a class="action primary" href="${escapeHtml(ncbiUrl)}" target="_blank" rel="noopener noreferrer">Open NCBI record ↗</a>`
             : "";
 
           const copyAction = accession
